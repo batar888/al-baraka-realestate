@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     شركة البركة العقارية للاستثمار — شركة قابضة · جدة
+     Cinematic single-file landing page · dark luxury (chiaroscuro × gold)
+     Engine: Lenis + GSAP (one rAF) · procedural canvas scroll-film · AR/EN i18n
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>البركة العقارية للاستثمار — من الفرصة إلى القيمة</title>
+<meta name="description" content="شركة البركة العقارية للاستثمار — شركة قابضة في جدة: تطوير عقاري، شراكات تطويرية، إدارة مشاريع وأصول، ووساطة عقارية مرخصة. نحوّل الأرض والفرصة العقارية إلى مشروع استثماري مدروس." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@400;500;600;700&family=Tajawal:wght@200;300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+
+<style>
+  :root{
+    --night:#0A0806; --night-2:#0D0A08; --panel:#12100B; --panel-2:#171208;
+    --cream:#F2E7D5; --cream-soft:#C9B99F; --cream-faint:#8F7F68;
+    --gold:#C9974C; --gold-deep:#8A6128; --gold-bright:#E2B264; --gold-pale:#EED09A;
+    --line:rgba(201,151,76,.22); --line-soft:rgba(201,151,76,.11);
+    --ambient:#0A0806; --maxw:1280px; --ease:cubic-bezier(.22,.61,.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%} html{scroll-behavior:auto}
+  body{background:var(--night);color:var(--cream-soft);font-family:"Tajawal",system-ui,sans-serif;font-weight:300;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.9}
+  ::selection{background:var(--gold);color:#140D04}
+  h1,h2,h3,.display{font-family:"El Messiri",serif;font-weight:600;line-height:1.18;color:var(--cream)}
+  .latin{font-family:"Cormorant Garamond",serif;letter-spacing:.34em;text-transform:uppercase;direction:ltr}
+  html[dir="ltr"] body{line-height:1.75}
+
+  /* ── fixed cinematic layers ─────────────────────────────────────────── */
+  #ambient{position:fixed;inset:0;z-index:-3;background:var(--ambient)}
+  #glow{position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.55;
+    background:radial-gradient(110% 80% at 50% -10%,rgba(201,151,76,.14),rgba(201,151,76,0) 55%)}
+  #vignette{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(140% 120% at 50% 44%,transparent 52%,rgba(0,0,0,.5) 100%)}
+  #grain{position:fixed;inset:-50%;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  #progress{position:fixed;top:0;right:0;left:0;height:2px;z-index:70;transform-origin:right;transform:scaleX(0);
+    background:linear-gradient(90deg,var(--gold-deep),var(--gold-bright),var(--gold))}
+  html[dir="ltr"] #progress{transform-origin:left}
+
+  /* ── header ─────────────────────────────────────────────────────────── */
+  header{position:fixed;top:0;right:0;left:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    padding:clamp(14px,2.2vw,26px) clamp(18px,4vw,54px);will-change:transform;
+    transition:transform .5s var(--ease),background .5s,backdrop-filter .5s,box-shadow .5s,padding .5s}
+  header.hidden{transform:translateY(-115%)}
+  header.solid{background:rgba(10,8,6,.72);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line-soft);
+    padding-top:clamp(10px,1.4vw,14px);padding-bottom:clamp(10px,1.4vw,14px)}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+  .brand img{height:clamp(34px,3.6vw,44px);width:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))}
+  .brand .wm{font-family:"El Messiri",serif;font-weight:700;font-size:clamp(18px,2vw,23px);color:var(--cream);white-space:nowrap}
+  .brand .wm small{display:block;font-size:10px;font-weight:400;color:var(--gold);letter-spacing:.14em;line-height:1.4}
+  header nav{display:flex;align-items:center;gap:clamp(14px,2vw,30px)}
+  header nav a{color:var(--cream-soft);text-decoration:none;font-size:14px;font-weight:400;transition:color .3s}
+  header nav a:hover{color:var(--gold-bright)}
+  .nav-cta{border:1px solid var(--gold);border-radius:999px;padding:8px 22px;color:var(--gold-bright)!important}
+  .nav-cta:hover{background:var(--gold);color:#140D04!important}
+  #langBtn{background:none;border:1px solid var(--line);border-radius:999px;color:var(--cream-soft);cursor:pointer;
+    font-family:"Tajawal",sans-serif;font-size:13px;padding:7px 16px;transition:border-color .3s,color .3s}
+  #langBtn:hover{border-color:var(--gold);color:var(--gold-bright)}
+  @media(max-width:820px){header nav a:not(.nav-cta){display:none}
+    .nav-cta{white-space:nowrap;padding:7px 16px;font-size:13px}
+    .brand .wm{font-size:16px}}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:2px solid var(--gold);outline-offset:3px;border-radius:6px}
+
+  /* ── helpers ────────────────────────────────────────────────────────── */
+  section{position:relative}
+  .wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:clamp(20px,5vw,68px)}
+  .idx{font-family:"El Messiri",serif;font-size:15px;color:var(--gold);font-weight:600;letter-spacing:.08em}
+  .gold-text{background:linear-gradient(180deg,var(--gold-pale),var(--gold-bright) 45%,var(--gold-deep));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .reveal{opacity:0;transform:translateY(34px);transition:opacity 1.1s var(--ease),transform 1.1s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  .lead{font-size:clamp(16px,1.8vw,20px);color:var(--cream-soft);max-width:62ch}
+
+  /* ── 1 · HERO ───────────────────────────────────────────────────────── */
+  #hero{height:132vh}
+  #hero .stage{position:sticky;top:0;height:100svh;overflow:hidden;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:5vh 18px 13vh;perspective:1300px}
+  #hero .aura{position:absolute;top:42%;left:50%;width:92vmin;height:92vmin;border-radius:50%;z-index:0;pointer-events:none;
+    transform:translate3d(calc(-50% + var(--px,0px)),calc(-50% + var(--py,0px)),0);
+    background:radial-gradient(circle,rgba(226,178,100,.34),rgba(169,123,51,.10) 42%,transparent 66%);
+    filter:blur(18px);opacity:0;will-change:transform,opacity;animation:auraIn 1.6s ease-out .15s forwards,auraPulse 8s ease-in-out 1.8s infinite}
+  @keyframes auraIn{to{opacity:.8}} @keyframes auraPulse{0%,100%{opacity:.66}50%{opacity:.95}}
+  #hero .motes{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  #hero .motes span{position:absolute;border-radius:50%;opacity:0;will-change:transform,opacity;filter:blur(.4px);
+    background:radial-gradient(circle,rgba(238,208,142,.95),rgba(238,208,142,0) 70%);animation:mote linear infinite}
+  @keyframes mote{0%{opacity:0;transform:translateY(40px) scale(.5)}12%{opacity:.8}55%{opacity:.55}100%{opacity:0;transform:translateY(-130px) scale(1.05)}}
+  #hero .hero-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;will-change:transform,opacity}
+  #hero .latin{font-size:clamp(10px,1.3vw,13px);color:var(--gold-bright);margin-bottom:2.2vh;opacity:0}
+  #hero .media-float{animation:floaty 6.5s var(--ease) infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+  #hero .media-tilt{position:relative;transform-style:preserve-3d;transform:rotateX(var(--tx,0deg)) rotateY(var(--ty,0deg));transition:transform .3s ease-out}
+  #hero .hero-media{display:block;height:min(36vh,42vw);width:auto;object-fit:contain;opacity:0;
+    filter:drop-shadow(0 30px 44px rgba(0,0,0,.6)) drop-shadow(0 0 60px rgba(201,151,76,.22))}
+  #hero .specular{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:0;
+    background:linear-gradient(115deg,transparent 40%,rgba(255,244,220,.7) 50%,transparent 60%);background-size:280% 280%;
+    animation:sheen 7.5s ease-in-out 2.2s infinite}
+  @keyframes sheen{0%,16%{background-position:150% 0;opacity:0}24%{opacity:.9}46%,100%{background-position:-50% 0;opacity:0}}
+  #hero h1{font-size:clamp(42px,8.5vw,112px);font-weight:700;line-height:1.05;margin-top:2.2vh;opacity:0;clip-path:inset(0 0 100% 0)}
+  #hero .sub{margin-top:1.6vh;font-size:clamp(15px,1.9vw,21px);color:var(--cream-soft);opacity:0;max-width:34em;line-height:1.9}
+  #hero .sub2{margin-top:1vh;font-size:clamp(12px,1.3vw,14px);color:var(--cream-faint);opacity:0;letter-spacing:.06em}
+  .scrollcue{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:8px;
+    color:var(--cream-faint);font-size:12px;letter-spacing:.28em;font-family:"El Messiri",serif}
+  .scrollcue .bar{width:1px;height:44px;background:linear-gradient(var(--gold),transparent);animation:cue 2.4s var(--ease) infinite}
+  @keyframes cue{0%{transform:scaleY(.2);opacity:.2;transform-origin:top}50%{transform:scaleY(1);opacity:1}100%{transform:scaleY(.2);opacity:.2;transform-origin:bottom}}
+
+  /* ── 2 · FILM ───────────────────────────────────────────────────────── */
+  #film{height:560vh}
+  #film .stage{position:sticky;top:0;height:100svh;overflow:hidden;background:#070503}
+  #film canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #film .cap-title{position:absolute;inset:0;display:grid;place-items:center;z-index:4;pointer-events:none;opacity:0}
+  #film .cap-title h2{font-size:clamp(38px,7.5vw,96px);font-weight:700;text-align:center;padding-inline:20px;
+    text-shadow:0 4px 40px rgba(0,0,0,.8)}
+  #film .caps{position:absolute;inset-inline-end:clamp(20px,6vw,98px);bottom:clamp(84px,15vh,160px);z-index:4;
+    width:min(78vw,460px);text-align:end;pointer-events:none}
+  #film .cap{position:absolute;inset-inline-end:0;bottom:0;opacity:0;transform:translateY(14px);
+    font-family:"El Messiri",serif;font-size:clamp(20px,3.2vw,36px);line-height:1.5;color:var(--cream);
+    padding:14px 22px;border-radius:8px;
+    background:radial-gradient(120% 130% at 85% 50%,rgba(7,5,3,.72),rgba(7,5,3,.25) 60%,rgba(7,5,3,0) 100%);
+    text-shadow:0 2px 10px rgba(0,0,0,.95),0 3px 30px rgba(0,0,0,.9)}
+  #film .cap b{color:var(--gold-bright);font-weight:600}
+
+  /* ── 3 · STORY ──────────────────────────────────────────────────────── */
+  #story{padding:20vh 0 14vh}
+  #story .idx{display:block;margin-bottom:14px}
+  #story h2{font-size:clamp(34px,5.4vw,72px);margin-bottom:26px;max-width:16em}
+  #story .lead{margin-bottom:8vh}
+  #story .vm{display:grid;grid-template-columns:1fr;gap:26px}
+  @media(min-width:860px){#story .vm{grid-template-columns:1fr 1fr}}
+  .card{position:relative;border:1px solid var(--line-soft);border-radius:10px;background:linear-gradient(160deg,var(--panel),rgba(18,16,11,.4));
+    padding:clamp(26px,3.4vw,44px);transition:transform .5s var(--ease),border-color .5s,box-shadow .5s;overflow:hidden}
+  .card::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:2px;
+    background:linear-gradient(180deg,var(--gold-bright),transparent 80%);opacity:.55}
+  .card:hover{transform:translateY(-6px);border-color:var(--line);box-shadow:0 34px 70px -40px rgba(0,0,0,.8)}
+  .card h3{font-size:clamp(21px,2.2vw,26px);margin-bottom:12px;color:var(--gold-bright)}
+  .card p{font-size:clamp(14px,1.6vw,17px);color:var(--cream-soft)}
+  #story .values{margin-top:8vh;display:flex;flex-wrap:wrap;gap:12px}
+  #story .values span{border:1px solid var(--line-soft);border-radius:999px;padding:9px 20px;font-size:13.5px;color:var(--cream-soft);
+    background:rgba(18,16,11,.5);transition:border-color .3s,color .3s}
+  #story .values span:hover{border-color:var(--gold);color:var(--gold-bright)}
+
+  /* ── 4 · DOMAINS ────────────────────────────────────────────────────── */
+  #domains{padding:14vh 0}
+  #domains .head{margin-bottom:clamp(40px,6vw,72px)}
+  #domains .idx{display:block;margin-bottom:12px}
+  #domains h2{font-size:clamp(32px,5vw,64px)}
+  #domains .cards{display:grid;grid-template-columns:1fr;gap:22px}
+  @media(min-width:760px){#domains .cards{grid-template-columns:1fr 1fr}}
+  .dom{border:1px solid var(--line-soft);border-radius:10px;padding:clamp(26px,3vw,40px);background:linear-gradient(170deg,var(--panel),rgba(13,10,8,.3));
+    transition:transform .5s var(--ease),border-color .5s,box-shadow .5s}
+  .dom:hover{transform:translateY(-8px);border-color:var(--line);box-shadow:0 40px 80px -44px rgba(0,0,0,.9)}
+  .dom svg{width:46px;height:46px;color:var(--gold-bright);margin-bottom:18px}
+  .dom h3{font-size:clamp(20px,2.1vw,25px);margin-bottom:6px}
+  .dom .tag{font-size:13px;color:var(--gold);margin-bottom:16px;display:block}
+  .dom ul{list-style:none}
+  .dom li{position:relative;padding-inline-start:22px;font-size:14.5px;color:var(--cream-soft);padding-block:5px}
+  .dom li::before{content:"";position:absolute;inset-inline-start:0;top:.95em;width:10px;height:1px;background:var(--gold)}
+
+  /* ── 5 · MODEL (partnership diagram) ────────────────────────────────── */
+  #model{padding:14vh 0}
+  #model .grid{display:grid;grid-template-columns:1fr;gap:clamp(40px,5vw,70px);align-items:center}
+  @media(min-width:960px){#model .grid{grid-template-columns:1fr 1.1fr}}
+  #model .idx{display:block;margin-bottom:12px}
+  #model h2{font-size:clamp(32px,5vw,62px);margin-bottom:22px}
+  #model .steps{margin-top:5vh;display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  #model .step{border:1px solid var(--line-soft);border-radius:8px;padding:16px 18px;background:rgba(18,16,11,.5)}
+  #model .step b{display:block;font-family:"El Messiri",serif;color:var(--gold-bright);font-size:15px;margin-bottom:4px}
+  #model .step span{font-size:13px;color:var(--cream-faint)}
+  #model .diagram{position:relative}
+  #model .diagram svg{width:100%;height:auto;display:block}
+  #model .diagram text{font-family:"El Messiri",serif;fill:var(--cream)}
+  #model .diagram .t-sub{font-family:"Tajawal",sans-serif;fill:var(--cream-faint)}
+
+  /* ── 6 · GOVERNANCE ─────────────────────────────────────────────────── */
+  #governance{padding:14vh 0}
+  #governance .panel{border:1px solid var(--line-soft);border-radius:14px;overflow:hidden;
+    background:linear-gradient(165deg,var(--panel-2),rgba(10,8,6,.2));padding:clamp(30px,5vw,70px)}
+  #governance .idx{display:block;margin-bottom:12px}
+  #governance h2{font-size:clamp(30px,4.8vw,60px);margin-bottom:18px}
+  #governance .lead{margin-bottom:6vh}
+  #governance ol{list-style:none;columns:1;column-gap:44px}
+  @media(min-width:860px){#governance ol{columns:2}}
+  #governance li{break-inside:avoid;display:flex;gap:16px;align-items:flex-start;padding-block:16px;border-top:1px solid var(--line-soft);font-size:15.5px;color:var(--cream-soft)}
+  #governance li .gv-check{flex:none;width:26px;height:26px;margin-top:3px;border-radius:50%;border:1px solid var(--gold);
+    display:grid;place-items:center;color:var(--gold-bright)}
+  #governance li .gv-check svg{width:13px;height:13px}
+  #governance .chips{margin-top:6vh;display:flex;flex-wrap:wrap;gap:14px}
+  #governance .chips span{border:1px solid var(--line);border-radius:999px;padding:10px 24px;font-size:14px;color:var(--gold-bright);
+    background:rgba(201,151,76,.06);font-weight:500}
+  #governance .chips b{color:var(--cream);font-weight:500;direction:ltr;unicode-bidi:embed}
+
+  /* ── 7 · STATS ──────────────────────────────────────────────────────── */
+  #stats{padding:16vh 0}
+  #stats .head{text-align:center;margin-bottom:clamp(40px,6vw,80px)}
+  #stats .idx{display:block;margin-bottom:10px}
+  #stats h2{font-size:clamp(32px,5vw,64px)}
+  #stats .grid{display:grid;grid-template-columns:1fr;gap:26px;text-align:center}
+  @media(min-width:820px){#stats .grid{grid-template-columns:1.2fr 1fr 1fr}}
+  .stat{border:1px solid var(--line-soft);border-radius:12px;padding:clamp(30px,3.6vw,50px) 24px;background:linear-gradient(170deg,var(--panel),rgba(13,10,8,.25))}
+  .stat .num{font-family:"El Messiri",serif;font-weight:700;font-size:clamp(34px,4.6vw,58px);line-height:1.15;
+    background:linear-gradient(180deg,var(--gold-pale),var(--gold-bright) 45%,var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .unit{display:block;font-family:"El Messiri",serif;font-size:clamp(16px,1.8vw,21px);color:var(--gold-bright);margin-top:2px}
+  .stat p{margin-top:14px;font-size:14px;color:var(--cream-faint);max-width:34ch;margin-inline:auto}
+
+  /* ── 8 · PERSONAS ───────────────────────────────────────────────────── */
+  #personas{padding:14vh 0}
+  #personas .head{margin-bottom:clamp(36px,5vw,64px)}
+  #personas .idx{display:block;margin-bottom:12px}
+  #personas h2{font-size:clamp(30px,4.8vw,60px);max-width:18em}
+  #personas .cards{display:grid;grid-template-columns:1fr;gap:20px}
+  @media(min-width:700px){#personas .cards{grid-template-columns:1fr 1fr}}
+  @media(min-width:1100px){#personas .cards{grid-template-columns:repeat(4,1fr)}}
+  .persona{display:flex;flex-direction:column;border:1px solid var(--line-soft);border-radius:12px;padding:28px 24px;
+    background:linear-gradient(170deg,var(--panel),rgba(13,10,8,.3));transition:transform .5s var(--ease),border-color .5s,box-shadow .5s}
+  .persona:hover{transform:translateY(-8px);border-color:var(--gold);box-shadow:0 40px 80px -44px rgba(0,0,0,.9)}
+  .persona .p-i{font-family:"Cormorant Garamond",serif;font-size:13px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;direction:ltr;text-align:start}
+  .persona h3{font-size:21px;margin:10px 0 8px}
+  .persona p{font-size:14px;color:var(--cream-faint);flex:1}
+  .persona button{margin-top:22px;border:1px solid var(--gold);background:none;border-radius:999px;padding:11px 20px;cursor:pointer;
+    color:var(--gold-bright);font-family:"El Messiri",serif;font-size:15px;font-weight:600;transition:background .35s,color .35s,transform .35s}
+  .persona button:hover{background:var(--gold);color:#140D04;transform:translateY(-2px)}
+
+  /* ── 9 · CTA (pinned dramatic dim) ──────────────────────────────────── */
+  #cta{height:230vh}
+  #cta .stage{position:sticky;top:0;height:100svh;overflow:hidden;display:grid;place-items:center;background:var(--night)}
+  #cta .emblem{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+  #cta .emblem img{height:min(52vh,70vw);width:auto;filter:drop-shadow(0 0 80px rgba(201,151,76,.3))}
+  #cta .emblem::before{content:"";position:absolute;width:110vmin;height:110vmin;border-radius:50%;
+    background:radial-gradient(circle,rgba(226,178,100,.20),rgba(169,123,51,.05) 45%,transparent 68%);filter:blur(10px)}
+  #cta .dim{position:absolute;inset:0;opacity:0;backdrop-filter:blur(3px);
+    background:radial-gradient(120% 100% at 50% 55%,rgba(5,3,2,.78),rgba(5,3,2,.94))}
+  #cta .content{position:relative;z-index:3;text-align:center;opacity:0;transform:translateY(28px);padding-inline:20px;max-width:900px}
+  #cta .content .latin{display:block;font-size:12px;color:var(--gold-bright);margin-bottom:18px}
+  #cta h2{font-size:clamp(40px,8vw,104px);line-height:1.1}
+  #cta .content p{margin:20px auto 0;color:var(--cream-soft);font-size:clamp(15px,1.8vw,20px);max-width:44ch}
+  #cta .btns{margin-top:44px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  #cta .minor{margin-top:26px;display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+  #cta .minor a{color:var(--cream-faint);font-size:14px;text-decoration:none;border-bottom:1px solid transparent;transition:color .3s,border-color .3s}
+  #cta .minor a:hover{color:var(--gold-bright);border-color:var(--gold)}
+  .btn{border-radius:999px;padding:15px 42px;font-family:"El Messiri",serif;font-size:17px;font-weight:600;text-decoration:none;display:inline-block;
+    cursor:pointer;transition:transform .35s var(--ease),box-shadow .35s,background .35s,color .35s;border:none}
+  .btn-primary{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#140D04;box-shadow:0 16px 44px -14px rgba(201,151,76,.55)}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 22px 54px -14px rgba(201,151,76,.7)}
+  .btn-ghost{border:1px solid var(--gold);color:var(--gold-bright);background:none}
+  .btn-ghost:hover{background:var(--gold);color:#140D04;transform:translateY(-3px)}
+
+  /* ── 10 · CONTACT / FORMS ───────────────────────────────────────────── */
+  #contact{padding:12vh 0 14vh}
+  #contact .head{text-align:center;margin-bottom:clamp(30px,4vw,50px)}
+  #contact h2{font-size:clamp(30px,4.6vw,56px)}
+  #contact .head p{margin-top:12px;color:var(--cream-faint);font-size:15px}
+  .direct{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:clamp(36px,5vw,60px)}
+  .direct a{display:inline-flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:999px;padding:12px 26px;
+    color:var(--cream);text-decoration:none;font-size:15px;background:rgba(18,16,11,.5);transition:border-color .3s,color .3s,transform .3s}
+  .direct a:hover{border-color:var(--gold);color:var(--gold-bright);transform:translateY(-2px)}
+  .direct svg{width:18px;height:18px;color:var(--gold-bright)}
+  .direct .num{direction:ltr;unicode-bidi:embed}
+  .tabs{display:flex;gap:10px;justify-content:center;margin-bottom:34px;flex-wrap:wrap}
+  .tabs button{border:1px solid var(--line);background:none;border-radius:999px;padding:12px 30px;cursor:pointer;
+    color:var(--cream-soft);font-family:"El Messiri",serif;font-size:16px;font-weight:600;transition:background .35s,color .35s,border-color .35s}
+  .tabs button[aria-selected="true"]{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#140D04;border-color:transparent}
+  form{max-width:860px;margin-inline:auto;border:1px solid var(--line-soft);border-radius:16px;
+    background:linear-gradient(170deg,var(--panel),rgba(13,10,8,.35));padding:clamp(24px,4vw,52px)}
+  form[hidden]{display:none}
+  .fgrid{display:grid;grid-template-columns:1fr;gap:20px 24px}
+  @media(min-width:720px){.fgrid{grid-template-columns:1fr 1fr}.fw{grid-column:1/-1}}
+  .field label{display:block;font-size:13.5px;color:var(--gold-bright);margin-bottom:8px;font-weight:500}
+  .field input,.field select,.field textarea{width:100%;background:rgba(10,8,6,.6);border:1px solid var(--line-soft);border-radius:8px;
+    color:var(--cream);font-family:"Tajawal",sans-serif;font-size:15px;padding:13px 16px;transition:border-color .3s}
+  .field textarea{min-height:120px;resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);outline:none}
+  .field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C9974C' fill='none' stroke-width='1.6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:left 16px center;padding-inline-end:16px}
+  html[dir="ltr"] .field select{background-position:right 16px center}
+  .field.err input,.field.err select,.field.err textarea{border-color:#B4543E}
+  .field .fe{display:none;font-size:12px;color:#E08A72;margin-top:6px}
+  .field.err .fe{display:block}
+  .fsubmit{margin-top:30px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .fsubmit .btn[disabled]{opacity:.6;cursor:wait;transform:none}
+  .fnote{font-size:12px;color:var(--cream-faint)}
+  .fail-note{display:none;margin-top:22px;border:1px solid rgba(180,84,62,.5);background:rgba(120,50,34,.12);border-radius:10px;
+    padding:16px 20px;font-size:14.5px;color:#E8B4A4}
+  .fail-note.show{display:block}
+  .fail-note .links{margin-top:10px;display:flex;gap:18px;flex-wrap:wrap}
+  .fail-note a{color:var(--gold-bright);text-decoration:none;border-bottom:1px solid var(--gold-deep)}
+  .form-success{display:none;max-width:860px;margin-inline:auto;text-align:center;border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(170deg,var(--panel),rgba(13,10,8,.35));padding:clamp(40px,6vw,70px)}
+  .form-success.show{display:block}
+  .form-success .ok{width:78px;height:78px;margin:0 auto 22px;border-radius:50%;border:1px solid var(--gold);
+    display:grid;place-items:center;color:var(--gold-bright);box-shadow:0 0 60px rgba(201,151,76,.25)}
+  .form-success .ok svg{width:34px;height:34px}
+  .form-success h3{font-size:clamp(24px,3vw,34px);margin-bottom:10px}
+  .form-success .ref{font-family:"Cormorant Garamond",serif;letter-spacing:.2em;color:var(--gold-bright);font-size:18px;direction:ltr}
+  .form-success p{margin-top:14px;color:var(--cream-soft);font-size:15px}
+  .form-success .again{margin-top:28px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+  /* ── footer ─────────────────────────────────────────────────────────── */
+  footer{padding:10vh 0 5vh;border-top:1px solid var(--line-soft);background:linear-gradient(180deg,rgba(13,10,8,0),rgba(7,5,3,.8))}
+  footer .top{display:grid;grid-template-columns:1fr;gap:40px;margin-bottom:7vh}
+  @media(min-width:900px){footer .top{grid-template-columns:1.2fr 1fr 1fr}}
+  footer .id img{height:64px;margin-bottom:18px}
+  footer .id .wm{font-family:"El Messiri",serif;font-size:clamp(20px,2.2vw,26px);font-weight:700;color:var(--cream);line-height:1.5}
+  footer .id .wm-en{font-family:"Cormorant Garamond",serif;font-size:13px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-top:6px;direction:ltr;text-align:start}
+  footer .id p{margin-top:16px;font-size:14px;color:var(--cream-faint);max-width:38ch}
+  footer h4{font-family:"El Messiri",serif;font-size:16px;color:var(--gold-bright);margin-bottom:18px;font-weight:600}
+  footer .cl{list-style:none;font-size:14px;color:var(--cream-soft)}
+  footer .cl li{padding-block:6px;display:flex;gap:10px;align-items:baseline}
+  footer .cl .k{color:var(--cream-faint);flex:none}
+  footer .cl .v{color:var(--cream-soft)} footer .cl .v.ltr{direction:ltr;unicode-bidi:embed;text-align:start}
+  footer .cl a{color:var(--cream-soft);text-decoration:none;transition:color .3s} footer .cl a:hover{color:var(--gold-bright)}
+  footer .links{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;padding-top:5vh;border-top:1px solid var(--line-soft)}
+  footer .links a{color:var(--cream-faint);text-decoration:none;font-size:13.5px;transition:color .3s}
+  footer .links a:hover{color:var(--gold-bright)}
+  footer .cr{margin-top:22px;text-align:center;color:var(--cream-faint);font-size:12px}
+  footer .cr .demo{display:block;margin-top:6px;opacity:.75}
+
+  /* ── floating WhatsApp ──────────────────────────────────────────────── */
+  #waFloat{position:fixed;bottom:24px;inset-inline-start:24px;z-index:55;width:56px;height:56px;border-radius:50%;
+    display:grid;place-items:center;background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#140D04;
+    box-shadow:0 14px 40px -10px rgba(201,151,76,.6);opacity:0;pointer-events:none;transform:translateY(16px);
+    transition:opacity .5s var(--ease),transform .5s var(--ease)}
+  #waFloat.show{opacity:1;pointer-events:auto;transform:none}
+  #waFloat svg{width:26px;height:26px}
+  #waFloat:hover{transform:translateY(-3px)}
+
+  @media(prefers-reduced-motion:reduce){
+    #hero .aura,#hero .motes span,#hero .specular,#hero .media-float,.scrollcue .bar{animation:none}
+    #hero .aura{opacity:.6}
+    #hero .latin,#hero .hero-media,#hero h1,#hero .sub,#hero .sub2,.scrollcue{opacity:1!important;clip-path:none!important}
+    *{scroll-behavior:auto}
+  }
+</style>
+<noscript><style>
+  .reveal{opacity:1;transform:none}
+  #hero .latin,#hero .hero-media,#hero h1,#hero .sub,#hero .sub2,.scrollcue{opacity:1!important;clip-path:none!important}
+  #film{height:auto} #film .stage{position:relative;height:60vh}
+  #cta{height:auto} #cta .stage{height:auto;padding:16vh 0} #cta .dim{opacity:1} #cta .content{opacity:1;transform:none}
+</style></noscript>
+</head>
+<body>
+<div id="ambient"></div><div id="glow"></div><div id="vignette"></div><div id="grain"></div><div id="progress"></div>
+
+<header id="header">
+  <a class="brand" href="#hero">
+    <img id="navLogo" alt="" width="44" height="44" />
+    <span class="wm" data-i18n="brand">البركة العقارية<small class="latin" style="letter-spacing:.14em">AL BARAKA · HOLDING</small></span>
+  </a>
+  <nav>
+    <a href="#story" data-i18n="nav1">من نحن</a>
+    <a href="#domains" data-i18n="nav2">مجالات العمل</a>
+    <a href="#model" data-i18n="nav3">الشراكة</a>
+    <a href="#governance" data-i18n="nav4">الحوكمة</a>
+    <a href="#stats" data-i18n="nav5">الأرقام</a>
+    <a class="nav-cta" href="#contact" data-i18n="navCta">تواصل معنا</a>
+    <button id="langBtn" type="button" aria-label="Switch language">EN</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ═ 1 · HERO ═ -->
+  <section id="hero" data-ambient="#0A0806" data-glow=".55">
+    <div class="stage">
+      <div class="aura" aria-hidden="true"></div>
+      <div class="motes" aria-hidden="true">
+        <span style="left:24%;top:64%;width:7px;height:7px;animation-duration:9s;animation-delay:0s"></span>
+        <span style="left:38%;top:72%;width:5px;height:5px;animation-duration:11s;animation-delay:1.4s"></span>
+        <span style="left:52%;top:60%;width:9px;height:9px;animation-duration:13s;animation-delay:3.1s"></span>
+        <span style="left:63%;top:70%;width:4px;height:4px;animation-duration:10s;animation-delay:.7s"></span>
+        <span style="left:71%;top:64%;width:6px;height:6px;animation-duration:12s;animation-delay:2.3s"></span>
+        <span style="left:45%;top:78%;width:5px;height:5px;animation-duration:14s;animation-delay:4.2s"></span>
+        <span style="left:31%;top:55%;width:4px;height:4px;animation-duration:11s;animation-delay:5.5s"></span>
+        <span style="left:58%;top:80%;width:7px;height:7px;animation-duration:9.5s;animation-delay:6.1s"></span>
+      </div>
+      <div class="hero-inner">
+        <span class="latin">Al Baraka Real Estate Investment · Holding Co.</span>
+        <div class="media-float"><div class="media-tilt">
+          <img class="hero-media" id="heroLogo" src="data:image/png;base64,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" alt="شعار شركة البركة العقارية للاستثمار" loading="eager" />
+          <span class="specular" id="specular" aria-hidden="true"></span>
+        </div></div>
+        <h1 class="gold-text" data-i18n="heroH1">البركة العقارية</h1>
+        <div class="sub" data-i18n="heroSub">نحوّل الأرض والفرصة العقارية إلى مشروعٍ استثماريٍّ مدروس — بالشراكة والحوكمة والإدارة الاحترافية.</div>
+        <div class="sub2" data-i18n="heroSub2">شركة قابضة — جدة، المملكة العربية السعودية</div>
+      </div>
+      <div class="scrollcue"><span data-i18n="scrollCue">اكتشف الرحلة</span><span class="bar"></span></div>
+    </div>
+  </section>
+
+  <!-- ═ 2 · FILM (procedural canvas, scroll-scrubbed) ═ -->
+  <section id="film" data-ambient="#070503" data-glow=".3">
+    <div class="stage">
+      <canvas id="filmCanvas" aria-hidden="true"></canvas>
+      <div class="cap-title" id="capTitle"><h2 class="gold-text" data-i18n="filmTitle">من الأرض إلى القيمة</h2></div>
+      <div class="caps" id="filmCaps">
+        <div class="cap" data-a="0.11" data-b="0.22" data-i18n-html="filmC1">أرضٌ خام في موقعٍ واعد…<br /><b>هنا يبدأ عمل البركة.</b></div>
+        <div class="cap" data-a="0.26" data-b="0.42" data-i18n-html="filmC2">ندرس الفرصة ونحلّل جدواها الاقتصادية<br /><b>قبل أي التزام.</b></div>
+        <div class="cap" data-a="0.47" data-b="0.66" data-i18n-html="filmC3">نبني الشراكة وندير التطوير —<br /><b>من المخطط إلى التنفيذ.</b></div>
+        <div class="cap" data-a="0.73" data-b="0.94" data-i18n-html="filmC4">مشروعٌ يُطرح في السوق وفق الأنظمة…<br /><b>وقيمة تعود على جميع الأطراف.</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ 3 · STORY ═ -->
+  <section id="story" data-ambient="#0C0907" data-glow=".5">
+    <div class="wrap">
+      <span class="idx reveal" data-i18n="idx1">٠١ — من نحن</span>
+      <h2 class="gold-text reveal" data-i18n="storyH2">منصة عقارية متكاملة، تديرها عقلية استثمارية</h2>
+      <p class="lead reveal" data-i18n="storyLead">تعمل شركة البركة العقارية للاستثمار — شركة قابضة مقرّها جدة — في تطوير المشاريع العقارية، وبناء الشراكات التطويرية، وإدارة المشاريع والأصول، والوساطة والتسويق العقاري. منهجيتنا واضحة: ندرس الفرصة ونحلّل جدواها الاقتصادية، نبني الشراكة مع ملاك الأراضي والمستثمرين والمطورين، ندير المشروع مع الجهات الهندسية والتنفيذية، ثم نسوّقه ونطرحه في السوق وفق الأنظمة المعتمدة في المملكة.</p>
+      <div class="vm">
+        <div class="card reveal"><h3 data-i18n="visionT">الرؤية</h3><p data-i18n="visionP">أن نكون من الشركات العقارية الموثوقة والرائدة في تطوير المشاريع وبناء الشراكات التطويرية داخل المملكة، وشريكاً موثوقاً لملاك الأراضي والمستثمرين في المشاريع ذات القيمة الاقتصادية المرتفعة.</p></div>
+        <div class="card reveal"><h3 data-i18n="missionT">الرسالة</h3><p data-i18n="missionP">حلول تطوير عقاري احترافية تقوم على تحليل الفرص، وبناء الشراكات الاستراتيجية، وإدارة المشاريع بكفاءة عالية؛ بما يحقق قيمة مضافة للسوق العقاري ويعزز عوائد المستثمرين.</p></div>
+      </div>
+      <div class="values reveal">
+        <span data-i18n="v1">الشفافية والمصداقية</span><span data-i18n="v2">الالتزام بالأنظمة العقارية</span>
+        <span data-i18n="v3">الاحترافية في الإدارة</span><span data-i18n="v4">شراكات طويلة الأمد</span>
+        <span data-i18n="v5">تعظيم القيمة الاقتصادية</span><span data-i18n="v6">الأمان وإدارة المخاطر</span>
+        <span data-i18n="v7">حفظ حقوق جميع الأطراف</span><span data-i18n="v8">الوضوح والحوكمة</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ 4 · DOMAINS ═ -->
+  <section id="domains" data-ambient="#0A0806" data-glow=".45">
+    <div class="wrap">
+      <div class="head">
+        <span class="idx reveal" data-i18n="idx2">٠٢ — مجالات العمل</span>
+        <h2 class="gold-text reveal" data-i18n="domH2">أربعة مجالات… منظومة واحدة</h2>
+      </div>
+      <div class="cards">
+        <article class="dom reveal">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 42h36M10 42V22l10-6v26M20 42V16l14-8v34M27 20h.01M27 26h.01M27 32h.01M14 26h.01M14 32h.01"/></svg>
+          <h3 data-i18n="d1T">التطوير العقاري</h3><span class="tag" data-i18n="d1Tag">من دراسة الموقع إلى الطرح في السوق</span>
+          <ul>
+            <li data-i18n="d1L1">دراسة المواقع والفرص وتحليل إمكانات التطوير</li>
+            <li data-i18n="d1L2">إعداد دراسات الجدوى الاقتصادية وتطوير الفكرة الاستثمارية</li>
+            <li data-i18n="d1L3">إعداد المخطط التطويري والتنسيق مع المكاتب الهندسية</li>
+            <li data-i18n="d1L4">إدارة مراحل التطوير والتنفيذ والإشراف على التسويق والبيع</li>
+          </ul>
+        </article>
+        <article class="dom reveal">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10h22M8 18h32M8 26h26M8 34h18M36 30l4 4-8 8-4 1 1-4 7-9zM40 6v8M36 10h8"/></svg>
+          <h3 data-i18n="d2T">إدارة المشاريع العقارية</h3><span class="tag" data-i18n="d2Tag">من الفكرة حتى التسويق النهائي</span>
+          <ul>
+            <li data-i18n="d2L1">إعداد الخطط التنفيذية ومتابعة مراحل التنفيذ</li>
+            <li data-i18n="d2L2">إدارة التكاليف والجداول الزمنية بدقة</li>
+            <li data-i18n="d2L3">التنسيق بين الجهات الهندسية والتنفيذية</li>
+            <li data-i18n="d2L4">الإشراف على عمليات التسويق والبيع</li>
+          </ul>
+        </article>
+        <article class="dom reveal">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 4l16 6v12c0 10-6.5 17.5-16 22C14.5 39.5 8 32 8 22V10l16-6zM17 24l5 5 9-11"/></svg>
+          <h3 data-i18n="d3T">الحوكمة والوساطة والتسويق</h3><span class="tag" data-i18n="d3Tag">تعاملات موثوقة بمعايير معلنة</span>
+          <ul>
+            <li data-i18n="d3L1">الالتزام بأنظمة الهيئة العامة للعقار ومنصة فال</li>
+            <li data-i18n="d3L2">توثيق الاتفاقيات والعلاقات التعاقدية</li>
+            <li data-i18n="d3L3">التحقق من الملكية والصكوك وجدية الأطراف</li>
+            <li data-i18n="d3L4">حماية سرية بيانات الأطراف والفرص العقارية</li>
+          </ul>
+        </article>
+        <article class="dom reveal">
+          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 42V14l12-8 12 8v28M14 20h.01M14 27h.01M14 34h.01M26 20h.01M26 27h.01M26 34h.01M32 30a8 8 0 1 0 8 8M40 30v8h-8"/></svg>
+          <h3 data-i18n="d4T">إدارة الأملاك والأصول</h3><span class="tag" data-i18n="d4Tag">عوائد أعلى… وأصول أكثر قيمة</span>
+          <ul>
+            <li data-i18n="d4L1">إدارة عقود الإيجار والتشغيل والصيانة</li>
+            <li data-i18n="d4L2">تحسين الأداء التشغيلي للعقارات</li>
+            <li data-i18n="d4L3">رفع كفاءة العوائد الاستثمارية</li>
+            <li data-i18n="d4L4">تعظيم قيمة الأصول العقارية</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ 5 · MODEL ═ -->
+  <section id="model" data-ambient="#0D0A07" data-glow=".5">
+    <div class="wrap"><div class="grid">
+      <div>
+        <span class="idx reveal" data-i18n="idx3">٠٣ — الشراكة التطويرية</span>
+        <h2 class="gold-text reveal" data-i18n="modelH2">نموذجٌ يجمع الأطراف… وعقدٌ يحفظ الحقوق</h2>
+        <p class="lead reveal" data-i18n="modelLead">يقوم نموذج البركة على التكامل: يقدّم المالك الأرض، ويقدّم المستثمر رأس المال، وينفّذ المطور والمقاول — بينما تتولى البركة دراسة الفرصة، وبناء التحالف، وإدارة المشروع، والإشراف على تسويقه وبيعه؛ باتفاقياتٍ واضحة تحفظ حقوق جميع الأطراف.</p>
+        <div class="steps">
+          <div class="step reveal"><b data-i18n="s1T">١ · دراسة الفرصة</b><span data-i18n="s1P">تحليل الموقع والجدوى الاقتصادية</span></div>
+          <div class="step reveal"><b data-i18n="s2T">٢ · بناء الشراكة</b><span data-i18n="s2P">اتفاقيات موثقة بين جميع الأطراف</span></div>
+          <div class="step reveal"><b data-i18n="s3T">٣ · إدارة التطوير</b><span data-i18n="s3P">تنفيذ محكم مع الجهات الهندسية</span></div>
+          <div class="step reveal"><b data-i18n="s4T">٤ · التسويق والطرح</b><span data-i18n="s4P">طرح المشروع وفق أنظمة المملكة</span></div>
+        </div>
+      </div>
+      <div class="diagram reveal" aria-hidden="true">
+        <svg viewBox="0 0 560 520" id="modelSvg">
+          <defs>
+            <radialGradient id="ndG" cx="50%" cy="40%" r="65%">
+              <stop offset="0%" stop-color="#241A0E"/><stop offset="100%" stop-color="#120E08"/>
+            </radialGradient>
+            <linearGradient id="gld" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E2B264"/><stop offset="100%" stop-color="#8A6128"/>
+            </linearGradient>
+          </defs>
+          <!-- flow lines -->
+          <g stroke="url(#gld)" stroke-width="1.6" fill="none" opacity=".85">
+            <path class="flow" d="M110 96 C 190 140, 230 180, 273 218"/>
+            <path class="flow" d="M450 96 C 370 140, 330 180, 287 218"/>
+            <path class="flow" d="M280 330 C 280 360, 280 380, 280 404"/>
+            <path class="flow" d="M96 260 C 160 268, 200 270, 236 272"/>
+          </g>
+          <!-- party nodes -->
+          <g>
+            <circle cx="110" cy="72" r="46" fill="url(#ndG)" stroke="#C9974C" stroke-width="1.2"/>
+            <text x="110" y="70" text-anchor="middle" font-size="17" data-i18n-svg="dgOwner">مالك الأرض</text>
+            <text x="110" y="90" text-anchor="middle" font-size="11" class="t-sub" data-i18n-svg="dgOwnerS">الأرض</text>
+            <circle cx="450" cy="72" r="46" fill="url(#ndG)" stroke="#C9974C" stroke-width="1.2"/>
+            <text x="450" y="70" text-anchor="middle" font-size="17" data-i18n-svg="dgInv">المستثمر</text>
+            <text x="450" y="90" text-anchor="middle" font-size="11" class="t-sub" data-i18n-svg="dgInvS">رأس المال</text>
+            <circle cx="86" cy="260" r="42" fill="url(#ndG)" stroke="#C9974C" stroke-width="1.2"/>
+            <text x="86" y="258" text-anchor="middle" font-size="16" data-i18n-svg="dgDev">المطور</text>
+            <text x="86" y="277" text-anchor="middle" font-size="11" class="t-sub" data-i18n-svg="dgDevS">التنفيذ</text>
+          </g>
+          <!-- Al Baraka core -->
+          <g>
+            <circle cx="280" cy="272" r="62" fill="url(#ndG)" stroke="url(#gld)" stroke-width="2"/>
+            <circle cx="280" cy="272" r="70" fill="none" stroke="#C9974C" stroke-width=".6" opacity=".4" stroke-dasharray="3 6"/>
+            <text x="280" y="266" text-anchor="middle" font-size="20" fill="#E2B264" data-i18n-svg="dgCore">البركة</text>
+            <text x="280" y="288" text-anchor="middle" font-size="11.5" class="t-sub" data-i18n-svg="dgCoreS">الدراسة · الإدارة · الحوكمة</text>
+          </g>
+          <!-- project result -->
+          <g>
+            <rect x="170" y="404" width="220" height="76" rx="12" fill="url(#ndG)" stroke="url(#gld)" stroke-width="1.6"/>
+            <text x="280" y="436" text-anchor="middle" font-size="19" fill="#E2B264" data-i18n-svg="dgProj">المشروع</text>
+            <text x="280" y="460" text-anchor="middle" font-size="12" class="t-sub" data-i18n-svg="dgProjS">قيمة اقتصادية لجميع الأطراف</text>
+          </g>
+        </svg>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═ 6 · GOVERNANCE ═ -->
+  <section id="governance" data-ambient="#0B0906" data-glow=".4">
+    <div class="wrap"><div class="panel">
+      <span class="idx reveal" data-i18n="idx4">٠٤ — الحوكمة وحفظ الحقوق</span>
+      <h2 class="gold-text reveal" data-i18n="govH2">الحوكمة ليست شعاراً… بل إجراء</h2>
+      <p class="lead reveal" data-i18n="govLead">في سوقٍ تتضارب فيه المعلومات، نلتزم بإجراءاتٍ معلنة تحفظ حقوق ملاك الأراضي والمستثمرين والوسطاء والسعاة العقاريين في كل صفقة.</p>
+      <ol>
+        <li class="reveal"><span class="gv-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg></span><span data-i18n="g1">الالتزام بأنظمة الهيئة العامة للعقار ومنصة فال للوساطة العقارية.</span></li>
+        <li class="reveal"><span class="gv-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg></span><span data-i18n="g2">توثيق الاتفاقيات والعلاقات التعاقدية بين جميع الأطراف.</span></li>
+        <li class="reveal"><span class="gv-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg></span><span data-i18n="g3">التحقق من ملكية العقارات وصحة الصكوك والمستندات.</span></li>
+        <li class="reveal"><span class="gv-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg></span><span data-i18n="g4">التحقق من جدية الملاك والمستثمرين والمشترين قبل أي خطوة.</span></li>
+        <li class="reveal"><span class="gv-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg></span><span data-i18n="g5">تقليل حلقات التفاوض ومنع تضارب المعلومات.</span></li>
+        <li class="reveal"><span class="gv-check"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8.5l3.5 3.5 7-8"/></svg></span><span data-i18n="g6">حماية سرية بيانات الأطراف والفرص العقارية.</span></li>
+      </ol>
+      <div class="chips reveal">
+        <span data-i18n-html="chip1">رخصة فال للوساطة والتسويق العقاري <b>1200046394</b></span>
+        <span data-i18n-html="chip2">الرقم الموحد للمنشأة <b>7050921068</b></span>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ═ 7 · STATS ═ -->
+  <section id="stats" data-ambient="#0C0906" data-glow=".55">
+    <div class="wrap">
+      <div class="head">
+        <span class="idx reveal" data-i18n="idx5">٠٥ — الأرقام</span>
+        <h2 class="gold-text reveal" data-i18n="statsH2">خبرة تُقاس بالأرقام</h2>
+      </div>
+      <div class="grid">
+        <div class="stat reveal">
+          <span class="num" id="statBillions" data-target="2000000000">0</span>
+          <span class="unit" data-i18n="st1U">ريال سعودي +</span>
+          <p data-i18n="st1P">القيمة التقديرية للفرص والمشاريع العقارية التي تعاملت معها الشركة أو قامت بدراستها.</p>
+        </div>
+        <div class="stat reveal">
+          <span class="num" data-i18n="st2N">منذ 2000</span>
+          <span class="unit" data-i18n="st2U">خبرات تجارية واستثمارية</span>
+          <p data-i18n="st2P">خبرات فريق العمل الممتدة في الأعمال التجارية والاستثمارية.</p>
+        </div>
+        <div class="stat reveal">
+          <span class="num" data-i18n="st3N">منذ 2009</span>
+          <span class="unit" data-i18n="st3U">مشاريع كبرى وأعمال إنشائية</span>
+          <p data-i18n="st3P">مشاركة فريق العمل في أعمال إنشائية ومشاريع كبرى في قطاع التطوير.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ 8 · PERSONAS ═ -->
+  <section id="personas" data-ambient="#0A0806" data-glow=".45">
+    <div class="wrap">
+      <div class="head">
+        <span class="idx reveal" data-i18n="idx6">٠٦ — ابدأ من موقعك</span>
+        <h2 class="gold-text reveal" data-i18n="perH2">أياً كان موقعك في الصفقة… لدينا مسار لك</h2>
+      </div>
+      <div class="cards">
+        <article class="persona reveal">
+          <span class="p-i">Landowner</span>
+          <h3 data-i18n="p1T">مالك أرض</h3>
+          <p data-i18n="p1P">أرضك تستحق أكثر من الانتظار. نطوّرها معك بشراكةٍ تحفظ حقك وتعظّم قيمتها.</p>
+          <button type="button" data-form="opportunity" data-role="owner" data-i18n="p1B">طوّر أرضك معنا</button>
+        </article>
+        <article class="persona reveal">
+          <span class="p-i">Investor</span>
+          <h3 data-i18n="p2T">مستثمر</h3>
+          <p data-i18n="p2P">فرص مدروسة الجدوى في مواقع نموٍ حقيقية، بإدارةٍ محترفة وحوكمةٍ واضحة.</p>
+          <button type="button" data-form="partnership" data-role="investor" data-i18n="p2B">استثمر معنا</button>
+        </article>
+        <article class="persona reveal">
+          <span class="p-i">Developer</span>
+          <h3 data-i18n="p3T">مطور أو منفّذ</h3>
+          <p data-i18n="p3P">تحالفات تطويرية متوازنة مع ملاكٍ وممولين جادّين، بإدارة مشروعٍ محكمة.</p>
+          <button type="button" data-form="partnership" data-role="developer" data-i18n="p3B">ابدأ شراكة تطويرية</button>
+        </article>
+        <article class="persona reveal">
+          <span class="p-i">Opportunity</span>
+          <h3 data-i18n="p4T">صاحب فرصة أو وسيط</h3>
+          <p data-i18n="p4P">قدّم فرصتك بسرّيةٍ تامة، واحصل على دراسةٍ جادّة — وحقّك محفوظ بالتوثيق.</p>
+          <button type="button" data-form="opportunity" data-role="broker" data-i18n="p4B">قدّم فرصتك العقارية</button>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ 9 · CTA ═ -->
+  <section id="cta" data-ambient="#080604" data-glow=".35">
+    <div class="stage">
+      <div class="emblem" id="ctaEmblem"><img id="ctaLogo" alt="" /></div>
+      <div class="dim" id="ctaDim"></div>
+      <div class="content" id="ctaContent">
+        <span class="latin">Your opportunity · Our craft</span>
+        <h2 class="gold-text" data-i18n="ctaH2">حوّل فرصتك إلى مشروع</h2>
+        <p data-i18n="ctaP">أرسل تفاصيل أرضك أو فرصتك العقارية، أو اطلب شراكة استثمارية — وسيتولى فريق البركة الدراسة والرد.</p>
+        <div class="btns">
+          <button class="btn btn-primary" type="button" data-form="opportunity" data-i18n="ctaB1">قدّم فرصتك العقارية</button>
+          <button class="btn btn-ghost" type="button" data-form="partnership" data-i18n="ctaB2">ابدأ شراكة تطويرية</button>
+        </div>
+        <div class="minor">
+          <a href="#contact" data-form="opportunity" data-i18n="ctaM1">اطلب دراسة فرصة عقارية</a>
+          <a href="#contact" data-form="partnership" data-i18n="ctaM2">استثمر معنا</a>
+          <a href="#contact" data-i18n="ctaM3">تواصل مع فريق البركة</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═ 10 · CONTACT ═ -->
+  <section id="contact" data-ambient="#0B0806" data-glow=".5">
+    <div class="wrap">
+      <div class="head">
+        <span class="idx reveal" data-i18n="idx7">٠٧ — التواصل</span>
+        <h2 class="gold-text reveal" data-i18n="conH2">تواصل مع فريق البركة</h2>
+        <p class="reveal" data-i18n="conP">قنوات مباشرة، أو نموذجٌ مفصّل — اختر ما يناسبك.</p>
+      </div>
+
+      <div class="direct reveal">
+        <a href="tel:+966555585665" id="btnCall">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.13.96.36 1.9.7 2.8a2 2 0 0 1-.45 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.25a2 2 0 0 1 2.1-.45c.9.34 1.84.57 2.8.7A2 2 0 0 1 22 16.9z"/></svg>
+          <span data-i18n="btnCall">اتصال مباشر</span>&nbsp;<span class="num">0555585665</span>
+        </a>
+        <a href="https://wa.me/966555585665?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D9%84%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%20%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%A8%D8%B1%D9%83%D8%A9%20%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%B1%D9%8A%D8%A9%20%D8%A8%D8%AE%D8%B5%D9%88%D8%B5%20%D9%81%D8%B1%D8%B5%D8%A9%20%D8%B9%D9%82%D8%A7%D8%B1%D9%8A%D8%A9." target="_blank" rel="noopener" id="btnWa">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07a8.2 8.2 0 0 1-2.4-1.5 9 9 0 0 1-1.66-2.06c-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2-1.42.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.58-.35zM12.05 21.8h-.01a9.9 9.9 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 1 1 8.38 4.63zM12.04.4A11.6 11.6 0 0 0 2 17.8L.6 23l5.3-1.4a11.55 11.55 0 0 0 5.55 1.42h.01A11.6 11.6 0 0 0 12.04.4z"/></svg>
+          <span data-i18n="btnWa">واتساب</span>
+        </a>
+        <a href="mailto:albaraka.sa0@gmail.com" id="btnMail">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          <span data-i18n="btnMail">البريد الإلكتروني</span>
+        </a>
+      </div>
+
+      <div class="tabs reveal" role="tablist">
+        <button type="button" id="tabOpp" role="tab" aria-selected="true" data-i18n="tabOpp">تقديم فرصة عقارية</button>
+        <button type="button" id="tabPart" role="tab" aria-selected="false" data-i18n="tabPart">طلب شراكة استثمارية</button>
+      </div>
+
+      <!-- Form A · opportunity -->
+      <form id="formOpp" class="reveal" novalidate>
+        <div class="fgrid">
+          <div class="field"><label for="oName" data-i18n="fName">اسم مقدم الطلب *</label>
+            <input id="oName" name="name" type="text" required data-i18n-ph="phName" placeholder="الاسم الكامل" />
+            <span class="fe" data-i18n="feReq">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="oRole" data-i18n="fRole">الصفة *</label>
+            <select id="oRole" name="role" required>
+              <option value="" data-i18n="optSelect">— اختر —</option>
+              <option value="owner" data-i18n="optOwner">مالك أرض</option>
+              <option value="investor" data-i18n="optInvestor">مستثمر</option>
+              <option value="developer" data-i18n="optDeveloper">مطور عقاري</option>
+              <option value="broker" data-i18n="optBroker">وسيط عقاري</option>
+              <option value="agent" data-i18n="optAgent">ساعٍ عقاري</option>
+              <option value="other" data-i18n="optOppOwner">صاحب فرصة</option>
+            </select>
+            <span class="fe" data-i18n="feReq2">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="oPhone" data-i18n="fPhone">رقم التواصل *</label>
+            <input id="oPhone" name="phone" type="tel" inputmode="tel" required data-i18n-ph="phPhone" placeholder="05xxxxxxxx" style="direction:ltr;text-align:start" />
+            <span class="fe" data-i18n="fePhone">أدخل رقم تواصل صحيحاً.</span></div>
+          <div class="field"><label for="oCity" data-i18n="fCity">المدينة *</label>
+            <input id="oCity" name="city" type="text" required data-i18n-ph="phCity" placeholder="جدة" />
+            <span class="fe" data-i18n="feReq3">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="oType" data-i18n="fType">نوع العقار *</label>
+            <select id="oType" name="type" required>
+              <option value="" data-i18n="optSelect2">— اختر —</option>
+              <option value="land" data-i18n="optLand">أرض خام</option>
+              <option value="residential" data-i18n="optRes">سكني</option>
+              <option value="commercial" data-i18n="optCom">تجاري</option>
+              <option value="mixed" data-i18n="optMix">متعدد الاستخدامات</option>
+              <option value="other" data-i18n="optOther">آخر</option>
+            </select>
+            <span class="fe" data-i18n="feReq4">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="oArea" data-i18n="fArea">مساحة العقار (م²) *</label>
+            <input id="oArea" name="area" type="text" inputmode="numeric" required data-i18n-ph="phArea" placeholder="مثال: 2400" style="direction:ltr;text-align:start" />
+            <span class="fe" data-i18n="feReq5">هذا الحقل مطلوب.</span></div>
+          <div class="field fw"><label for="oLoc" data-i18n="fLoc">موقع العقار *</label>
+            <input id="oLoc" name="location" type="text" required data-i18n-ph="phLoc" placeholder="الحي / الشارع، أو رابط الموقع على الخريطة" />
+            <span class="fe" data-i18n="feReq6">هذا الحقل مطلوب.</span></div>
+          <div class="field fw"><label for="oDesc" data-i18n="fDesc">وصف الفرصة *</label>
+            <textarea id="oDesc" name="desc" required data-i18n-ph="phDesc" placeholder="صف الفرصة: الوضع الحالي للأرض أو العقار، الصك، التصور المقترح…"></textarea>
+            <span class="fe" data-i18n="feReq7">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="oPref" data-i18n="fPref">طريقة التواصل المفضلة *</label>
+            <select id="oPref" name="pref" required>
+              <option value="" data-i18n="optSelect3">— اختر —</option>
+              <option value="call" data-i18n="optCall">اتصال هاتفي</option>
+              <option value="whatsapp" data-i18n="optWa">واتساب</option>
+              <option value="email" data-i18n="optEmail">بريد إلكتروني</option>
+            </select>
+            <span class="fe" data-i18n="feReq8">هذا الحقل مطلوب.</span></div>
+        </div>
+        <div class="fail-note" id="oppFail">
+          <span data-i18n="failMsg">تعذّر إرسال الطلب. أعد المحاولة، أو تواصل معنا مباشرة:</span>
+          <div class="links">
+            <a href="tel:+966555585665" data-i18n="failCall">اتصال: 0555585665</a>
+            <a href="https://wa.me/966555585665" target="_blank" rel="noopener" data-i18n="failWa">واتساب</a>
+          </div>
+        </div>
+        <div class="fsubmit">
+          <button class="btn btn-primary" type="submit" data-i18n="oppSubmit">أرسل الفرصة للدراسة</button>
+          <span class="fnote" data-i18n="demoNote">نموذج تجريبي للعرض — البيانات لا تُرسل إلى أي خادم.</span>
+        </div>
+      </form>
+
+      <!-- Form B · partnership -->
+      <form id="formPart" class="reveal" novalidate hidden>
+        <div class="fgrid">
+          <div class="field"><label for="pName" data-i18n="fName2">الاسم الكامل *</label>
+            <input id="pName" name="name" type="text" required data-i18n-ph="phName2" placeholder="الاسم الكامل" />
+            <span class="fe" data-i18n="feReq9">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="pRole" data-i18n="fRole2">الصفة / الجهة *</label>
+            <select id="pRole" name="role" required>
+              <option value="" data-i18n="optSelect4">— اختر —</option>
+              <option value="investor" data-i18n="optInvInd">مستثمر فرد</option>
+              <option value="investco" data-i18n="optInvCo">شركة استثمارية</option>
+              <option value="developer" data-i18n="optDevCo">مطور عقاري</option>
+              <option value="contractor" data-i18n="optContr">شركة مقاولات</option>
+              <option value="engineering" data-i18n="optEng">مكتب هندسي</option>
+              <option value="finance" data-i18n="optFin">جهة تمويلية</option>
+            </select>
+            <span class="fe" data-i18n="feReq10">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="pPhone" data-i18n="fPhone2">رقم التواصل *</label>
+            <input id="pPhone" name="phone" type="tel" inputmode="tel" required data-i18n-ph="phPhone2" placeholder="05xxxxxxxx" style="direction:ltr;text-align:start" />
+            <span class="fe" data-i18n="fePhone2">أدخل رقم تواصل صحيحاً.</span></div>
+          <div class="field"><label for="pEmail" data-i18n="fEmail">البريد الإلكتروني</label>
+            <input id="pEmail" name="email" type="email" data-i18n-ph="phEmail" placeholder="name@example.com" style="direction:ltr;text-align:start" /></div>
+          <div class="field"><label for="pCity" data-i18n="fCity2">المدينة *</label>
+            <input id="pCity" name="city" type="text" required data-i18n-ph="phCity2" placeholder="جدة" />
+            <span class="fe" data-i18n="feReq11">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="pKind" data-i18n="fKind">نوع الشراكة *</label>
+            <select id="pKind" name="kind" required>
+              <option value="" data-i18n="optSelect5">— اختر —</option>
+              <option value="landdev" data-i18n="optLandDev">شراكة تطويرية على أرض</option>
+              <option value="investproj" data-i18n="optInvProj">استثمار في مشروع</option>
+              <option value="alliance" data-i18n="optAlliance">تحالف تنفيذي</option>
+              <option value="funding" data-i18n="optFunding">تمويل مشاريع</option>
+              <option value="other" data-i18n="optOther2">أخرى</option>
+            </select>
+            <span class="fe" data-i18n="feReq12">هذا الحقل مطلوب.</span></div>
+          <div class="field fw"><label for="pDesc" data-i18n="fAbout">نبذة عن اهتمامك *</label>
+            <textarea id="pDesc" name="desc" required data-i18n-ph="phAbout" placeholder="حدّثنا باختصار عن اهتمامك الاستثماري أو التطويري…"></textarea>
+            <span class="fe" data-i18n="feReq13">هذا الحقل مطلوب.</span></div>
+          <div class="field"><label for="pPref" data-i18n="fPref2">طريقة التواصل المفضلة *</label>
+            <select id="pPref" name="pref" required>
+              <option value="" data-i18n="optSelect6">— اختر —</option>
+              <option value="call" data-i18n="optCall2">اتصال هاتفي</option>
+              <option value="whatsapp" data-i18n="optWa2">واتساب</option>
+              <option value="email" data-i18n="optEmail2">بريد إلكتروني</option>
+            </select>
+            <span class="fe" data-i18n="feReq14">هذا الحقل مطلوب.</span></div>
+        </div>
+        <div class="fail-note" id="partFail">
+          <span data-i18n="failMsg2">تعذّر إرسال الطلب. أعد المحاولة، أو تواصل معنا مباشرة:</span>
+          <div class="links">
+            <a href="tel:+966555585665" data-i18n="failCall2">اتصال: 0555585665</a>
+            <a href="https://wa.me/966555585665" target="_blank" rel="noopener" data-i18n="failWa2">واتساب</a>
+          </div>
+        </div>
+        <div class="fsubmit">
+          <button class="btn btn-primary" type="submit" data-i18n="partSubmit">أرسل طلب الشراكة</button>
+          <span class="fnote" data-i18n="demoNote2">نموذج تجريبي للعرض — البيانات لا تُرسل إلى أي خادم.</span>
+        </div>
+      </form>
+
+      <!-- success panel -->
+      <div class="form-success" id="formSuccess" role="status" aria-live="polite">
+        <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 6.5"/></svg></div>
+        <h3 class="gold-text" data-i18n="okT">تم استلام طلبك بنجاح</h3>
+        <div class="ref" id="okRef">BRK-2026-0000</div>
+        <p data-i18n="okP">يتعامل فريق البركة مع طلبك بسرّيةٍ تامة، وسيتواصل معك خلال يومَي عمل.</p>
+        <div class="again">
+          <a class="btn btn-ghost" href="https://wa.me/966555585665" target="_blank" rel="noopener" data-i18n="okWa">تواصل عبر واتساب</a>
+          <button class="btn btn-primary" type="button" id="okAgain" data-i18n="okAgain">إرسال طلب آخر</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer data-ambient="#070503">
+  <div class="wrap">
+    <div class="top">
+      <div class="id">
+        <img id="footLogo" alt="" />
+        <div class="wm" data-i18n="footName">شركة البركة العقارية للاستثمار<br />— شركة قابضة —</div>
+        <div class="wm-en latin" style="letter-spacing:.16em">Al Baraka Real Estate Investment Co.</div>
+        <p data-i18n="footTag">نحوّل الأرض والفرصة العقارية إلى مشروعٍ استثماريٍّ مدروس — من خلال الشراكة والحوكمة والإدارة الاحترافية.</p>
+      </div>
+      <div>
+        <h4 data-i18n="footC1">بيانات التواصل</h4>
+        <ul class="cl">
+          <li><span class="k" data-i18n="fk1">الهاتف:</span><a class="v ltr" href="tel:+966555585665">0555585665</a></li>
+          <li><span class="k" data-i18n="fk2">البريد:</span><a class="v ltr" href="mailto:albaraka.sa0@gmail.com">albaraka.sa0@gmail.com</a></li>
+          <li><span class="k" data-i18n="fk3">بريد بديل:</span><a class="v ltr" href="mailto:albaraka.org.co@gmail.com">albaraka.org.co@gmail.com</a></li>
+          <li><span class="k" data-i18n="fk4">العنوان:</span><span class="v" data-i18n="fAddr">جدة — طريق الملك عبدالعزيز، الأندلس، برج البحر الأحمر بلازا، مبنى 5676، مكتب 302</span></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="footC2">الترخيص والحوكمة</h4>
+        <ul class="cl">
+          <li><span class="k" data-i18n="fk5">الرقم الموحد:</span><span class="v ltr">7050921068</span></li>
+          <li><span class="k" data-i18n="fk6">رخصة فال:</span><span class="v ltr">1200046394</span></li>
+          <li><span class="k" data-i18n="fk7">رئيس مجلس الإدارة:</span><span class="v" data-i18n="fChair">بندر بن سعد آل حمدان الغامدي</span></li>
+          <li><span class="v" style="color:var(--cream-faint);font-size:13px" data-i18n="fChairT">المستشار الدولي للاتحاد العالمي للمستثمرين العرب بالخارج</span></li>
+        </ul>
+      </div>
+    </div>
+    <nav class="links">
+      <a href="#story" data-i18n="nav1f">من نحن</a><a href="#domains" data-i18n="nav2f">مجالات العمل</a>
+      <a href="#model" data-i18n="nav3f">الشراكة التطويرية</a><a href="#governance" data-i18n="nav4f">الحوكمة</a>
+      <a href="#contact" data-i18n="nav6f">تواصل معنا</a>
+    </nav>
+    <div class="cr">
+      <span data-i18n="cr">© 2026 شركة البركة العقارية للاستثمار — شركة قابضة. جميع الحقوق محفوظة.</span>
+      <span class="demo" data-i18n="crDemo">صفحة عرض تجريبية — نماذج التواصل لا ترسل بيانات إلى أي خادم.</span>
+    </div>
+  </div>
+</footer>
+
+<a id="waFloat" href="https://wa.me/966555585665?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%D8%8C%20%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D9%84%D8%AA%D9%88%D8%A7%D8%B5%D9%84%20%D9%85%D8%B9%20%D9%81%D8%B1%D9%8A%D9%82%20%D8%A7%D9%84%D8%A8%D8%B1%D9%83%D8%A9%20%D8%A7%D9%84%D8%B9%D9%82%D8%A7%D8%B1%D9%8A%D8%A9." target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07a8.2 8.2 0 0 1-2.4-1.5 9 9 0 0 1-1.66-2.06c-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.1 3.2 5.1 4.49.71.3 1.27.49 1.7.63.72.23 1.37.2 1.88.12.58-.09 1.76-.72 2-1.42.25-.7.25-1.3.18-1.42-.08-.13-.28-.2-.58-.35zM12.05 21.8h-.01a9.9 9.9 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 1 1 8.38 4.63zM12.04.4A11.6 11.6 0 0 0 2 17.8L.6 23l5.3-1.4a11.55 11.55 0 0 0 5.55 1.42h.01A11.6 11.6 0 0 0 12.04.4z"/></svg>
+</a>
+
+<script>
+(function(){
+"use strict";
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hasGSAP=typeof gsap!=="undefined"&&typeof ScrollTrigger!=="undefined";
+if(hasGSAP) gsap.registerPlugin(ScrollTrigger);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ss=(e0,e1,x)=>{const t=clamp((x-e0)/(e1-e0),0,1);return t*t*(3-2*t);};
+const eo=t=>1-Math.pow(1-clamp(t,0,1),3);
+
+/* ── share the inlined logo everywhere (nav, footer, CTA, favicon, sheen mask) ── */
+const heroImg=document.getElementById("heroLogo"), logoSrc=heroImg.getAttribute("src");
+["navLogo","footLogo","ctaLogo"].forEach(id=>{const el=document.getElementById(id); if(el) el.src=logoSrc;});
+const fav=document.createElement("link"); fav.rel="icon"; fav.type="image/png"; fav.href=logoSrc; document.head.appendChild(fav);
+const spec=document.getElementById("specular");
+spec.style.webkitMaskImage="url("+logoSrc+")"; spec.style.maskImage="url("+logoSrc+")";
+spec.style.webkitMaskRepeat="no-repeat"; spec.style.maskRepeat="no-repeat";
+spec.style.webkitMaskPosition="center"; spec.style.maskPosition="center";
+spec.style.webkitMaskSize="contain"; spec.style.maskSize="contain";
+
+/* ── i18n ─────────────────────────────────────────────────────────────── */
+const AR={},EN={
+  brand:'AL BARAKA<small class="latin" style="letter-spacing:.14em">Real Estate Investment</small>',
+  nav1:"About",nav2:"What We Do",nav3:"Partnership",nav4:"Governance",nav5:"Track Record",navCta:"Contact Us",
+  heroH1:"AL BARAKA",
+  heroSub:"We turn land and real-estate opportunity into a rigorously studied investment project — through partnership, governance and professional management.",
+  heroSub2:"A Holding Company — Jeddah, Saudi Arabia",
+  scrollCue:"Begin the journey",
+  filmTitle:"From Land to Value",
+  filmC1:"Raw land in a promising location…<br /><b>this is where Al Baraka begins.</b>",
+  filmC2:"We study the opportunity and verify its economics<br /><b>before any commitment.</b>",
+  filmC3:"We build the partnership and manage development —<br /><b>from master plan to delivery.</b>",
+  filmC4:"A project brought to market under the Kingdom's regulations…<br /><b>value for every party.</b>",
+  idx1:"01 — About",storyH2:"An integrated real-estate platform, run with an investor's mind",
+  storyLead:"Al Baraka Real Estate Investment — a holding company headquartered in Jeddah — works in real-estate development, development partnerships, project and asset management, and licensed brokerage and marketing. Our method is clear: we study the opportunity and analyse its economic feasibility, build the partnership with landowners, investors and developers, manage the project with engineering and execution partners, then market it and bring it to market under the Kingdom's approved regulations.",
+  visionT:"Vision",visionP:"To be among the trusted, leading real-estate companies in project development and development partnerships within Saudi Arabia — a reliable partner to landowners and investors in projects of high economic value.",
+  missionT:"Mission",missionP:"Professional real-estate development solutions built on opportunity analysis, strategic partnerships, and highly efficient project management — adding value to the market and strengthening investor returns.",
+  v1:"Transparency & credibility",v2:"Regulatory compliance",v3:"Professional management",v4:"Long-term partnerships",
+  v5:"Maximising economic value",v6:"Security & risk management",v7:"Protecting all parties' rights",v8:"Clarity & governance",
+  idx2:"02 — What We Do",domH2:"Four disciplines… one system",
+  d1T:"Real-Estate Development",d1Tag:"From site study to market launch",
+  d1L1:"Site and opportunity studies; development-potential analysis",
+  d1L2:"Economic feasibility studies; shaping the investment concept",
+  d1L3:"Development master plan; coordination with engineering firms",
+  d1L4:"Managing development and execution; supervising marketing & sales",
+  d2T:"Project Management",d2Tag:"From concept to final marketing",
+  d2L1:"Execution plans and stage-by-stage follow-up",
+  d2L2:"Rigorous cost and schedule management",
+  d2L3:"Coordinating engineering and execution parties",
+  d2L4:"Supervising marketing and sales operations",
+  d3T:"Governance, Brokerage & Marketing",d3Tag:"Trusted dealings, declared standards",
+  d3L1:"Compliance with REGA regulations and the FAL platform",
+  d3L2:"Documented agreements and contractual relations",
+  d3L3:"Verifying ownership, deeds and the seriousness of all parties",
+  d3L4:"Protecting the confidentiality of parties and opportunities",
+  d4T:"Property & Asset Management",d4Tag:"Higher returns… more valuable assets",
+  d4L1:"Lease management, operation and maintenance",
+  d4L2:"Improving operational performance",
+  d4L3:"Raising the efficiency of investment returns",
+  d4L4:"Maximising the value of real-estate assets",
+  idx3:"03 — The Development Partnership",modelH2:"A model that unites the parties… a contract that protects their rights",
+  modelLead:"Al Baraka's model is built on integration: the owner contributes the land, the investor contributes capital, and the developer and contractor execute — while Al Baraka studies the opportunity, builds the alliance, manages the project and supervises its marketing and sale, under clear agreements that protect every party's rights.",
+  s1T:"1 · Study the opportunity",s1P:"Site analysis and economic feasibility",
+  s2T:"2 · Build the partnership",s2P:"Documented agreements between all parties",
+  s3T:"3 · Manage development",s3P:"Disciplined delivery with engineering partners",
+  s4T:"4 · Market & launch",s4P:"Brought to market under the Kingdom's regulations",
+  dgOwner:"Landowner",dgOwnerS:"The land",dgInv:"Investor",dgInvS:"The capital",dgDev:"Developer",dgDevS:"Execution",
+  dgCore:"AL BARAKA",dgCoreS:"Study · Management · Governance",dgProj:"The Project",dgProjS:"Economic value for every party",
+  idx4:"04 — Governance & Rights",govH2:"Governance is not a slogan… it is procedure",
+  govLead:"In a market of conflicting information, we follow declared procedures that protect the rights of landowners, investors, brokers and agents in every transaction.",
+  g1:"Compliance with the Real Estate General Authority and the FAL brokerage platform.",
+  g2:"Documenting agreements and contractual relations between all parties.",
+  g3:"Verifying property ownership and the validity of deeds and documents.",
+  g4:"Verifying the seriousness of owners, investors and buyers before any step.",
+  g5:"Reducing negotiation chains and preventing conflicting information.",
+  g6:"Protecting the confidentiality of parties' data and opportunities.",
+  chip1:'FAL Brokerage & Marketing License <b>1200046394</b>',chip2:'Unified Entity Number <b>7050921068</b>',
+  idx5:"05 — Track Record",statsH2:"Experience, measured in numbers",
+  st1U:"Saudi Riyals +",st1P:"Estimated value of the real-estate opportunities and projects the company has handled or studied.",
+  st2N:"Since 2000",st2U:"Commercial & investment experience",st2P:"The team's extended experience across commercial and investment ventures.",
+  st3N:"Since 2009",st3U:"Major projects & construction",st3P:"The team's participation in construction works and major projects.",
+  idx6:"06 — Start From Your Seat",perH2:"Whatever your seat at the table… there is a path for you",
+  p1T:"Landowner",p1P:"Your land deserves more than waiting. We develop it with you — a partnership that protects your right and maximises its value.",p1B:"Develop your land with us",
+  p2T:"Investor",p2P:"Feasibility-driven opportunities in genuine growth locations, professionally managed under clear governance.",p2B:"Invest with us",
+  p3T:"Developer / Contractor",p3P:"Balanced development alliances with serious owners and financiers, under disciplined project management.",p3B:"Start a development partnership",
+  p4T:"Opportunity Holder / Broker",p4P:"Submit your opportunity in full confidence, get a serious study — your right preserved in writing.",p4B:"Submit your opportunity",
+  ctaH2:"Turn your opportunity into a project",
+  ctaP:"Send the details of your land or real-estate opportunity, or request an investment partnership — Al Baraka's team will study it and respond.",
+  ctaB1:"Submit your opportunity",ctaB2:"Start a partnership",
+  ctaM1:"Request an opportunity study",ctaM2:"Invest with us",ctaM3:"Contact the Al Baraka team",
+  idx7:"07 — Contact",conH2:"Contact the Al Baraka team",conP:"Direct channels, or a detailed form — whichever suits you.",
+  btnCall:"Call now",btnWa:"WhatsApp",btnMail:"Email",
+  tabOpp:"Submit an Opportunity",tabPart:"Request a Partnership",
+  fName:"Applicant name *",phName:"Full name",fRole:"Capacity *",
+  optSelect:"— Select —",optOwner:"Landowner",optInvestor:"Investor",optDeveloper:"Developer",optBroker:"Broker",optAgent:"Real-estate agent",optOppOwner:"Opportunity holder",
+  fPhone:"Contact number *",phPhone:"05xxxxxxxx",fCity:"City *",phCity:"Jeddah",
+  fType:"Property type *",optSelect2:"— Select —",optLand:"Raw land",optRes:"Residential",optCom:"Commercial",optMix:"Mixed-use",optOther:"Other",
+  fArea:"Property area (m²) *",phArea:"e.g. 2400",
+  fLoc:"Property location *",phLoc:"District / street, or a map link",
+  fDesc:"Opportunity description *",phDesc:"Describe the opportunity: current status, title deed, proposed concept…",
+  fPref:"Preferred contact method *",optSelect3:"— Select —",optCall:"Phone call",optWa:"WhatsApp",optEmail:"Email",
+  oppSubmit:"Send for study",demoNote:"Demo form — no data is sent to any server.",
+  fName2:"Full name *",phName2:"Full name",fRole2:"Capacity / entity *",
+  optSelect4:"— Select —",optInvInd:"Individual investor",optInvCo:"Investment company",optDevCo:"Real-estate developer",optContr:"Contracting company",optEng:"Engineering office",optFin:"Financing entity",
+  fPhone2:"Contact number *",phPhone2:"05xxxxxxxx",fEmail:"Email",phEmail:"name@example.com",fCity2:"City *",phCity2:"Jeddah",
+  fKind:"Partnership type *",optSelect5:"— Select —",optLandDev:"Land development partnership",optInvProj:"Invest in a project",optAlliance:"Execution alliance",optFunding:"Project financing",optOther2:"Other",
+  fAbout:"About your interest *",phAbout:"Briefly tell us about your investment or development interest…",
+  fPref2:"Preferred contact method *",optSelect6:"— Select —",optCall2:"Phone call",optWa2:"WhatsApp",optEmail2:"Email",
+  partSubmit:"Send partnership request",demoNote2:"Demo form — no data is sent to any server.",
+  feReq:"This field is required.",feReq2:"This field is required.",feReq3:"This field is required.",feReq4:"This field is required.",
+  feReq5:"This field is required.",feReq6:"This field is required.",feReq7:"This field is required.",feReq8:"This field is required.",
+  feReq9:"This field is required.",feReq10:"This field is required.",feReq11:"This field is required.",feReq12:"This field is required.",
+  feReq13:"This field is required.",feReq14:"This field is required.",fePhone:"Enter a valid contact number.",fePhone2:"Enter a valid contact number.",
+  failMsg:"The request could not be sent. Try again, or contact us directly:",failCall:"Call: 0555585665",failWa:"WhatsApp",
+  failMsg2:"The request could not be sent. Try again, or contact us directly:",failCall2:"Call: 0555585665",failWa2:"WhatsApp",
+  okT:"Your request has been received",okP:"The Al Baraka team treats your request in full confidence and will contact you within two business days.",
+  okWa:"Continue on WhatsApp",okAgain:"Send another request",
+  footName:"Al Baraka Real Estate Investment<br />— Holding Company —",
+  footTag:"We turn land and real-estate opportunity into a rigorously studied investment project — through partnership, governance and professional management.",
+  footC1:"Contact",fk1:"Phone:",fk2:"Email:",fk3:"Alt. email:",fk4:"Address:",
+  fAddr:"Jeddah — King Abdulaziz Rd, Al Andalus, Red Sea Plaza Tower, Bldg 5676, Office 302",
+  footC2:"Licensing & Governance",fk5:"Unified No.:",fk6:"FAL License:",fk7:"Chairman:",
+  fChair:"Bandar bin Saad Al Hamdan Al-Ghamdi",fChairT:"International Advisor to the World Union of Arab Investors Abroad",
+  nav1f:"About",nav2f:"What We Do",nav3f:"Development Partnership",nav4f:"Governance",nav6f:"Contact",
+  cr:"© 2026 Al Baraka Real Estate Investment — Holding Company. All rights reserved.",
+  crDemo:"Demo showcase page — contact forms do not send data to any server.",
+  metaTitle:"Al Baraka Real Estate Investment — From Opportunity to Value"
+};
+/* capture Arabic originals */
+document.querySelectorAll("[data-i18n]").forEach(el=>{AR[el.getAttribute("data-i18n")]=el.textContent;});
+document.querySelectorAll("[data-i18n-html]").forEach(el=>{AR[el.getAttribute("data-i18n-html")]=el.innerHTML;});
+document.querySelectorAll("[data-i18n-ph]").forEach(el=>{AR[el.getAttribute("data-i18n-ph")]=el.getAttribute("placeholder");});
+document.querySelectorAll("[data-i18n-svg]").forEach(el=>{AR[el.getAttribute("data-i18n-svg")]=el.textContent;});
+AR.brand=document.querySelector("[data-i18n='brand']").innerHTML;
+AR.footName=document.querySelector("[data-i18n='footName']").innerHTML;
+AR.chip1=document.querySelector("[data-i18n-html='chip1']").innerHTML;
+AR.chip2=document.querySelector("[data-i18n-html='chip2']").innerHTML;
+AR.metaTitle=document.title;
+let lang="ar";
+const HTML_KEYS={brand:1,footName:1};
+function setLang(l){
+  lang=l; const D=l==="ar"?AR:EN;
+  document.documentElement.lang=l;
+  document.documentElement.dir=l==="ar"?"rtl":"ltr";
+  document.title=D.metaTitle||AR.metaTitle;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{const k=el.getAttribute("data-i18n");if(D[k]==null)return;
+    if(HTML_KEYS[k])el.innerHTML=D[k];else el.textContent=D[k];});
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{const k=el.getAttribute("data-i18n-html");if(D[k]!=null)el.innerHTML=D[k];});
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{const k=el.getAttribute("data-i18n-ph");if(D[k]!=null)el.setAttribute("placeholder",D[k]);});
+  document.querySelectorAll("[data-i18n-svg]").forEach(el=>{const k=el.getAttribute("data-i18n-svg");if(D[k]!=null)el.textContent=D[k];});
+  document.getElementById("langBtn").textContent=l==="ar"?"EN":"عربي";
+  renderStat(statShown);
+  try{localStorage.setItem("baraka-lang",l);}catch(e){}
+  if(hasGSAP)requestAnimationFrame(()=>ScrollTrigger.refresh());
+}
+document.getElementById("langBtn").addEventListener("click",()=>setLang(lang==="ar"?"en":"ar"));
+try{const saved=localStorage.getItem("baraka-lang");if(saved==="en")setLang("en");}catch(e){}
+
+/* ── Lenis + GSAP single clock ────────────────────────────────────────── */
+let lenis=null;
+if(typeof Lenis!=="undefined"&&hasGSAP&&!reduce){
+  lenis=new Lenis({duration:1.2,easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)),smoothWheel:true});
+  lenis.on("scroll",ScrollTrigger.update);
+  gsap.ticker.add(t=>lenis.raf(t*1000)); gsap.ticker.lagSmoothing(0); window.lenis=lenis;
+}
+function scrollToEl(t){ if(lenis)lenis.scrollTo(t,{offset:0}); else t.scrollIntoView({behavior:"smooth"}); }
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{
+  const t=document.querySelector(a.getAttribute("href")); if(t){e.preventDefault();scrollToEl(t);}
+}));
+
+/* ── header hide/show + progress ──────────────────────────────────────── */
+const header=document.getElementById("header"), progress=document.getElementById("progress");
+if(hasGSAP) ScrollTrigger.create({start:0,end:"max",onUpdate:s=>{
+  progress.style.transform="scaleX("+s.progress+")";
+  header.classList.toggle("solid",s.scroll()>40);
+  if(s.scroll()>140) header.classList.toggle("hidden",s.direction===1); else header.classList.remove("hidden");
+  document.getElementById("waFloat").classList.toggle("show",s.scroll()>innerHeight*.9);
+}});
+
+/* ── ambient per section ──────────────────────────────────────────────── */
+const ambient=document.getElementById("ambient"), glowEl=document.getElementById("glow");
+function applyAmbient(c,g){ if(hasGSAP){gsap.to(ambient,{backgroundColor:c,duration:1.1,overwrite:"auto",ease:"power2.out"});gsap.to(glowEl,{opacity:g,duration:1.1,overwrite:"auto"});}else{ambient.style.backgroundColor=c;glowEl.style.opacity=g;} }
+document.querySelectorAll("[data-ambient]").forEach(sec=>{
+  const c=sec.getAttribute("data-ambient"),g=parseFloat(sec.getAttribute("data-glow")||".5");
+  if(hasGSAP) ScrollTrigger.create({trigger:sec,start:"top 60%",end:"bottom 40%",onEnter:()=>applyAmbient(c,g),onEnterBack:()=>applyAmbient(c,g)});
+  else if("IntersectionObserver" in window) new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)applyAmbient(c,g);}),{threshold:.3}).observe(sec);
+});
+
+/* ── reveals ──────────────────────────────────────────────────────────── */
+const reveals=document.querySelectorAll(".reveal");
+if(hasGSAP&&!reduce) reveals.forEach(el=>ScrollTrigger.create({trigger:el,start:"top 88%",once:true,onEnter:()=>el.classList.add("in")}));
+else if("IntersectionObserver" in window){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.15});reveals.forEach(el=>io.observe(el));}
+else reveals.forEach(el=>el.classList.add("in"));
+
+/* ── HERO entrance + 3D pointer + handoff ─────────────────────────────── */
+if(hasGSAP&&!reduce){
+  gsap.timeline({defaults:{ease:"power3.out"}})
+    .fromTo("#hero .hero-media",{opacity:0,scale:.82,y:60,rotateZ:-4},{opacity:1,scale:1,y:0,rotateZ:0,duration:1.5},0.15)
+    .fromTo("#hero .latin",{opacity:0,y:14},{opacity:1,y:0,duration:.8},0.55)
+    .fromTo("#hero h1",{opacity:0,y:24,clipPath:"inset(0 0 100% 0)"},{opacity:1,y:0,clipPath:"inset(0 0 0% 0)",duration:1.1},0.7)
+    .fromTo("#hero .sub",{opacity:0,y:12},{opacity:1,y:0,duration:.8},1.05)
+    .fromTo("#hero .sub2",{opacity:0,y:10},{opacity:1,y:0,duration:.8},1.2)
+    .fromTo("#hero .scrollcue",{opacity:0},{opacity:1,duration:.8},1.35);
+  gsap.to("#hero .hero-inner",{scrollTrigger:{trigger:"#hero",start:"top top",end:"78% top",scrub:true},y:-50,opacity:0,ease:"none"});
+  gsap.to("#hero .aura",{scrollTrigger:{trigger:"#hero",start:"top top",end:"bottom top",scrub:true},scale:1.5,opacity:0,ease:"none"});
+  const stage=document.querySelector("#hero .stage"),tilt=document.querySelector("#hero .media-tilt"),aura=document.querySelector("#hero .aura"),motes=document.querySelector("#hero .motes");
+  stage.addEventListener("pointermove",e=>{const r=stage.getBoundingClientRect(),nx=(e.clientX-r.left)/r.width-.5,ny=(e.clientY-r.top)/r.height-.5;
+    tilt.style.setProperty("--ty",(nx*12).toFixed(2)+"deg");tilt.style.setProperty("--tx",(-ny*9).toFixed(2)+"deg");
+    aura.style.setProperty("--px",(-nx*46).toFixed(1)+"px");aura.style.setProperty("--py",(-ny*34).toFixed(1)+"px");
+    motes.style.transform="translate3d("+(nx*22).toFixed(1)+"px,"+(ny*16).toFixed(1)+"px,0)";});
+  stage.addEventListener("pointerleave",()=>{tilt.style.setProperty("--ty","0deg");tilt.style.setProperty("--tx","0deg");aura.style.setProperty("--px","0px");aura.style.setProperty("--py","0px");motes.style.transform="translate3d(0,0,0)";});
+}
+if(!hasGSAP) document.querySelectorAll("#hero .latin,#hero .hero-media,#hero h1,#hero .sub,#hero .sub2,#hero .scrollcue,#hero .aura").forEach(e=>{e.style.opacity=e.classList.contains("aura")?.6:1;e.style.clipPath="none";});
+
+/* ── FILM · procedural canvas renderer, scrubbed by scroll ───────────────
+   One continuous scene: raw land → golden survey plan → towers rise →
+   lit skyline + palm + reflections. draw(p) is deterministic in p∈[0,1]. */
+(function initFilm(){
+  const canvas=document.getElementById("filmCanvas");
+  const stageEl=canvas.closest(".stage");
+  const ctx=canvas.getContext("2d",{alpha:false});
+  let W=0,H=0,dpr=1,lastP=0;
+
+  const mul32=s=>()=>{s|=0;s=(s+0x6D2B79F5)|0;let t=Math.imul(s^(s>>>15),1|s);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};
+
+  /* skyline definition: [xCenter, width, height, riseStart, cols] (normalized) */
+  const DEFS=[
+    [.055,.050,.30,.560,3],[.135,.062,.46,.535,3],[.215,.055,.36,.585,3],[.300,.070,.57,.510,4],
+    [.378,.045,.40,.600,3],
+    [.462,.075,.86,.455,4],   /* hero left  */
+    [.578,.068,.98,.475,4],   /* hero right */
+    [.658,.048,.46,.575,3],[.732,.065,.60,.525,4],[.812,.050,.38,.590,3],[.888,.060,.28,.615,3]
+  ];
+  const rng=mul32(20260712);
+  const B=DEFS.map((d,bi)=>{
+    const win=new Float32Array(44*d[4]);
+    for(let i=0;i<win.length;i++) win[i]=.66+rng()*.26;
+    return {x:d[0],w:d[1],h:d[2],t0:d[3],cols:d[4],win,hero:bi===5||bi===6};
+  });
+  const P=[];const rp=mul32(99123);
+  for(let i=0;i<56;i++) P.push({x:.08+rp()*.84,s:.4+rp()*1.2,r:.8+rp()*1.6,ph:rp()*Math.PI*2});
+  const DUST=[];const rd=mul32(5511);
+  for(let i=0;i<42;i++) DUST.push({x:rd(),y:.3+rd()*.6,r:.5+rd()*1.4,ph:rd()*Math.PI*2});
+
+  /* Optional generated frame-sequence (Higgsfield): drop assets/seq/f000.jpg…
+     + assets/seq/manifest.json {"count":N} next to this file and the film
+     auto-upgrades to real footage. Absent/failed → procedural renderer. */
+  let seqFrames=null,seqCount=0,seqReady=false;
+  (function probeSeq(){
+    if(location.protocol==="file:")return;
+    fetch("assets/seq/manifest.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(m=>{
+      if(!m||!(m.count>1))return;
+      seqCount=m.count|0; const arr=new Array(seqCount); let loaded=0,errored=0;
+      const promote=()=>{ if(!seqReady&&loaded>0&&(loaded>=Math.ceil(seqCount*.6)||loaded+errored>=seqCount)){
+        seqFrames=arr; seqReady=true; draw(lastP,true); } };
+      for(let i=0;i<seqCount;i++){
+        const im=new Image(); im.decoding="async";
+        im.onload=()=>{arr[i]=im;loaded++;promote();if(loaded+errored===seqCount)draw(lastP,true);};
+        im.onerror=()=>{errored++;promote();};
+        im.src="assets/seq/f"+String(i).padStart(3,"0")+".jpg";
+      }
+    }).catch(()=>{});
+  })();
+  function drawSeq(p){
+    const idx=clamp(Math.round(p*(seqCount-1)),0,seqCount-1);
+    let im=seqFrames[idx];
+    if(!im){for(let d=1;d<seqCount;d++){if(seqFrames[idx-d]){im=seqFrames[idx-d];break;}if(seqFrames[idx+d]){im=seqFrames[idx+d];break;}}}
+    if(!im)return false;
+    const iw=im.naturalWidth,ih=im.naturalHeight,s=Math.max(W/iw,H/ih),dw=iw*s,dh=ih*s;
+    ctx.fillStyle="#070503";ctx.fillRect(0,0,W,H);
+    ctx.drawImage(im,(W-dw)/2,(H-dh)/2,dw,dh);
+    return true;
+  }
+
+  function resize(){
+    dpr=Math.min(2,window.devicePixelRatio||1);
+    W=stageEl.clientWidth;H=stageEl.clientHeight;
+    canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);
+    canvas.style.width=W+"px";canvas.style.height=H+"px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    draw(lastP,true);
+  }
+
+  function drawSkyline(p,mirror){
+    const horizon=H*.72, y0=horizon+ (H-horizon)*.14, skyH=horizon*.80;
+    const mobile=W/H<.8;
+    for(const b of B){
+      if(mobile&&!b.hero&&[.135,.215,.378,.658,.812].some(x=>Math.abs(b.x-x)<.01)) continue;
+      const rise=eo((p-b.t0)/.115); if(rise<=0)continue;
+      const bh=b.h*skyH*rise, bw=b.w*W*(mobile?1.35:1), bx=b.x*W-bw/2, by=y0-bh;
+      const fillA=ss(b.t0+.05,b.t0+.17,p);
+      if(fillA>0){
+        const g=ctx.createLinearGradient(0,by,0,y0);
+        g.addColorStop(0,"rgba(20,15,10,"+(.96*fillA)+")");g.addColorStop(1,"rgba(11,8,6,"+(.98*fillA)+")");
+        ctx.fillStyle=g;ctx.fillRect(bx,by,bw,bh);
+      }
+      const wf=(1-fillA)*.85*Math.min(1,rise*2);
+      if(wf>.01){
+        ctx.strokeStyle="rgba(201,151,76,"+wf+")";ctx.lineWidth=1;
+        ctx.strokeRect(bx+.5,by+.5,bw-1,bh-1);
+        ctx.beginPath();
+        for(let c=1;c<b.cols;c++){const cx2=bx+bw*c/b.cols;ctx.moveTo(cx2,by);ctx.lineTo(cx2,y0);}
+        ctx.stroke();
+      }
+      if(fillA>.25){
+        ctx.fillStyle="rgba(226,178,100,"+(.5*fillA)+")";ctx.fillRect(bx,by,bw,1.2);
+        ctx.fillRect(bx+(document.documentElement.dir==="rtl"?0:bw-1.2),by,1.2,bh);
+      }
+      if(b.hero&&fillA>.6&&!mirror){
+        ctx.strokeStyle="rgba(226,178,100,"+(.7*fillA)+")";ctx.lineWidth=1.4;
+        ctx.beginPath();ctx.moveTo(b.x*W,by);ctx.lineTo(b.x*W,by-skyH*.05*fillA);ctx.stroke();
+      }
+      /* windows */
+      if(fillA>.5&&p>.63){
+        const rows=Math.max(3,Math.floor(bh/(H*.035))),cols=b.cols;
+        const cw=bw/cols,chh=bh/rows;
+        for(let r2=0;r2<rows&&r2<44;r2++)for(let c2=0;c2<cols;c2++){
+          const thr=b.win[r2*cols+c2],lit=ss(thr,thr+.05,p);
+          if(lit<=.02)continue;
+          ctx.fillStyle="rgba(255,206,140,"+(lit*.72)+")";
+          ctx.fillRect(bx+c2*cw+cw*.24,y0-bh+r2*chh+chh*.28,cw*.5,chh*.42);
+        }
+      }
+    }
+    /* palm between hero towers */
+    const g2=eo(ss(.72,.90,p));
+    if(g2>0){
+      const cx=.522*W, y0b=y0, trunkH=skyH*1.04*g2, top={x:cx,y:y0b-trunkH};
+      ctx.strokeStyle="rgba(217,168,92,"+(.92*g2)+")";ctx.lineCap="round";
+      ctx.lineWidth=Math.max(2,W*.0035);
+      ctx.beginPath();ctx.moveTo(cx,y0b);ctx.quadraticCurveTo(cx+W*.006,y0b-trunkH*.5,top.x,top.y);ctx.stroke();
+      if(!mirror){ctx.save();ctx.shadowColor="rgba(226,178,100,.8)";ctx.shadowBlur=14;}
+      const FR=8,len=skyH*.30;
+      for(let i=0;i<FR;i++){
+        const t=i/(FR-1),ang=(-168+t*156)*Math.PI/180;
+        const fg=ss(.78+i*.011,.85+i*.011,p);if(fg<=0)continue;
+        const L=len*fg*(0.72+.28*Math.sin(t*Math.PI));
+        const mx=top.x+Math.cos(ang)*L*.62, my=top.y+Math.sin(ang)*L*.62-L*.16;
+        const ex=top.x+Math.cos(ang)*L, ey=top.y+Math.sin(ang)*L+L*.24;
+        ctx.strokeStyle="rgba(226,178,100,"+(.9*fg)+")";ctx.lineWidth=Math.max(1.6,W*.0025);
+        ctx.beginPath();ctx.moveTo(top.x,top.y);ctx.quadraticCurveTo(mx,my,ex,ey);ctx.stroke();
+      }
+      if(!mirror)ctx.restore();
+      /* ground arc — the emblem's arc */
+      const aA=ss(.78,.92,p);
+      if(aA>0&&!mirror){
+        ctx.strokeStyle="rgba(201,151,76,"+(.75*aA)+")";ctx.lineWidth=Math.max(2,W*.003);
+        ctx.beginPath();
+        ctx.moveTo(W*(.5-.42*aA),y0b+H*.012);
+        ctx.quadraticCurveTo(W*.5,y0b-H*.015,W*(.5+.42*aA),y0b+H*.012);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function draw(p,force){
+    if(!W||!H)return;
+    if(!force&&Math.abs(p-lastP)<.0004)return;
+    lastP=p;
+    if(seqReady&&drawSeq(p))return;
+    const horizon=H*.72, y0=horizon+(H-horizon)*.14;
+    /* sky */
+    const sky=ctx.createLinearGradient(0,0,0,H);
+    sky.addColorStop(0,"#060402");sky.addColorStop(.62,"#0B0805");sky.addColorStop(1,"#080604");
+    ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+    /* dusk / value glow */
+    const duskI=.9-ss(.15,.4,p)*.55+ss(.8,1,p)*.65;
+    let rg=ctx.createRadialGradient(W*.6,horizon,0,W*.6,horizon,W*.52);
+    rg.addColorStop(0,"rgba(196,138,62,"+(.17*duskI)+")");rg.addColorStop(1,"rgba(196,138,62,0)");
+    ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+    /* dunes (level out as the plan arrives) */
+    const duneA=1-ss(.16,.4,p);
+    if(duneA>0){
+      for(let i=0;i<3;i++){
+        const base=horizon+(H-horizon)*(.18+i*.26), amp=(H*.016)*(1+i*.7)*duneA;
+        ctx.fillStyle=["rgba(18,13,9,.85)","rgba(14,10,7,.9)","rgba(11,8,6,.95)"][i];
+        ctx.beginPath();ctx.moveTo(0,base);
+        for(let x=0;x<=W;x+=W/24) ctx.lineTo(x,base+Math.sin(x/W*Math.PI*(2.2+i)+i*2.4)*amp);
+        ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
+      }
+      /* raking light sweep */
+      const sweep=ss(.02,.2,p);
+      if(sweep>0&&sweep<1){
+        ctx.globalCompositeOperation="lighter";
+        const sx=W*(-.25+sweep*1.4);
+        let lg=ctx.createLinearGradient(sx-W*.22,horizon,sx+W*.22,H);
+        lg.addColorStop(0,"rgba(201,151,76,0)");lg.addColorStop(.5,"rgba(201,151,76,"+(.10*duneA)+")");lg.addColorStop(1,"rgba(201,151,76,0)");
+        ctx.fillStyle=lg;ctx.fillRect(0,horizon-H*.04,W,H-horizon+H*.04);
+        ctx.globalCompositeOperation="source-over";
+      }
+      /* dust motes */
+      const dA=duneA*ss(.0,.06,p);
+      if(dA>0){
+        ctx.fillStyle="rgba(238,208,142,"+(.5*dA)+")";
+        for(const d of DUST){
+          const dy=(d.y-p*.5)%1;
+          ctx.beginPath();ctx.arc(d.x*W,horizon+(H-horizon)*dy,d.r,0,7);ctx.fill();
+        }
+      }
+    }
+    /* survey grid */
+    const gp=ss(.17,.34,p), gFade=(1-ss(.5,.72,p)*.8);
+    if(gp>0&&gFade>0){
+      const vp={x:W*.5,y:horizon};
+      ctx.lineWidth=1;
+      ctx.strokeStyle="rgba(201,151,76,"+(.30*gp*gFade)+")";
+      ctx.beginPath();
+      for(let k=-8;k<=8;k++){
+        const tx=W*.5+k*(W/8)*1.9;
+        ctx.moveTo(vp.x,vp.y);
+        ctx.lineTo(vp.x+(tx-vp.x)*gp,vp.y+(H-vp.y)*gp);
+      }
+      ctx.stroke();
+      ctx.beginPath();
+      for(let r2=1;r2<=7;r2++){
+        const t=Math.pow(r2/8,1.7), y=horizon+(H-horizon)*t, hw=W*.55*gp*(0.4+t);
+        ctx.moveTo(W*.5-hw,y);ctx.lineTo(W*.5+hw,y);
+      }
+      ctx.strokeStyle="rgba(201,151,76,"+(.22*gp*gFade)+")";ctx.stroke();
+      /* plot boundary */
+      const pp=ss(.24,.36,p);
+      if(pp>0){
+        const nearY=H*.955,farY=horizon+(H-horizon)*.26;
+        const pts=[[W*.28,nearY],[W*.42,farY],[W*.60,farY],[W*.74,nearY]];
+        ctx.strokeStyle="rgba(226,178,100,"+(.85*pp*gFade)+")";ctx.lineWidth=1.6;
+        ctx.setLineDash([W*.02,W*.012]);ctx.lineDashOffset=-p*W*.2;
+        ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);
+        for(let i2=1;i2<4;i2++)ctx.lineTo(pts[i2][0],pts[i2][1]);
+        ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+        for(const q of pts){
+          let ng=ctx.createRadialGradient(q[0],q[1],0,q[0],q[1],10);
+          ng.addColorStop(0,"rgba(238,208,142,"+(.9*pp*gFade)+")");ng.addColorStop(1,"rgba(238,208,142,0)");
+          ctx.fillStyle=ng;ctx.beginPath();ctx.arc(q[0],q[1],10,0,7);ctx.fill();
+        }
+      }
+      /* building footprints glow just before rise */
+      const fp=ss(.36,.44,p)*(1-ss(.5,.6,p));
+      if(fp>0){
+        ctx.strokeStyle="rgba(226,178,100,"+(.55*fp)+")";ctx.lineWidth=1.2;
+        for(const b of B){
+          const bw=b.w*W,bx=b.x*W-bw/2;
+          ctx.strokeRect(bx,y0-3,bw,6);
+        }
+      }
+    }
+    /* cranes during construction */
+    const cA=ss(.44,.5,p)*(1-ss(.66,.75,p));
+    if(cA>0){
+      ctx.strokeStyle="rgba(180,150,110,"+(.6*cA)+")";ctx.lineWidth=1.2;
+      const skyH=horizon*.80;
+      [[.35,.62],[.68,.75]].forEach(cr=>{
+        const cx=cr[0]*W,chg=skyH*cr[1],topY=y0-chg;
+        ctx.beginPath();
+        ctx.moveTo(cx,y0);ctx.lineTo(cx,topY);
+        ctx.moveTo(cx-W*.09,topY);ctx.lineTo(cx+W*.05,topY);
+        ctx.moveTo(cx-W*.09,topY);ctx.lineTo(cx,topY+H*.02);
+        ctx.moveTo(cx+W*.035,topY);ctx.lineTo(cx+W*.035,topY+H*.05);
+        ctx.stroke();
+      });
+    }
+    /* skyline + reflection */
+    drawSkyline(p,false);
+    const refA=ss(.74,.9,p)*.16;
+    if(refA>0){
+      ctx.save();ctx.globalAlpha=refA;
+      ctx.translate(0,2*(horizon+(H-horizon)*.14));ctx.scale(1,-1);
+      drawSkyline(p,true);
+      ctx.restore();
+      const wg=ctx.createLinearGradient(0,y0,0,H);
+      wg.addColorStop(0,"rgba(8,6,4,0)");wg.addColorStop(1,"rgba(8,6,4,.92)");
+      ctx.fillStyle=wg;ctx.fillRect(0,y0,W,H-y0);
+    }
+    /* rising value particles */
+    const vA=ss(.76,.84,p);
+    if(vA>0){
+      ctx.globalCompositeOperation="lighter";
+      const skyH=horizon*.80;
+      for(const q of P){
+        const rise2=((p-.76)*q.s*2.2)%1.1;
+        const y=y0-rise2*skyH*1.05, x=q.x*W+Math.sin(q.ph+p*22)*W*.006;
+        const a=vA*(1-rise2*.85)*.7;
+        if(a<=0)continue;
+        ctx.fillStyle="rgba(238,208,142,"+a+")";
+        ctx.beginPath();ctx.arc(x,y,q.r,0,7);ctx.fill();
+      }
+      /* final bloom */
+      const bl=ss(.86,1,p);
+      if(bl>0){
+        let bg2=ctx.createRadialGradient(W*.52,y0-skyH*.45,0,W*.52,y0-skyH*.45,W*.55);
+        bg2.addColorStop(0,"rgba(226,178,100,"+(.20*bl)+")");bg2.addColorStop(1,"rgba(226,178,100,0)");
+        ctx.fillStyle=bg2;ctx.fillRect(0,0,W,H);
+      }
+      ctx.globalCompositeOperation="source-over";
+    }
+  }
+
+  const capTitle=document.getElementById("capTitle");
+  const caps=Array.from(document.querySelectorAll("#filmCaps .cap"));
+  function driveCaps(p){
+    const tA=Math.min(ss(.012,.04,p),1-ss(.075,.105,p));
+    capTitle.style.opacity=Math.max(0,tA);
+    capTitle.style.transform="scale("+(0.92+0.08*Math.max(0,tA))+")";
+    for(const c of caps){
+      const a=parseFloat(c.dataset.a),b=parseFloat(c.dataset.b),mid=(a+b)/2;
+      const o=Math.min(ss(a,a+(mid-a)*.6,p),1-ss(mid+(b-mid)*.4,b,p));
+      c.style.opacity=Math.max(0,o);
+      c.style.transform="translateY("+(14*(1-Math.max(0,o)))+"px)";
+    }
+  }
+  window.addEventListener("resize",resize,{passive:true});
+  resize();
+  if(reduce||!hasGSAP){ draw(1,true); driveCaps(.02); }
+  else{
+    ScrollTrigger.create({trigger:"#film",start:"top top",end:"bottom bottom",scrub:true,
+      onUpdate:s=>{draw(s.progress);driveCaps(s.progress);}});
+    draw(0,true);
+  }
+})();
+
+/* ── stats counter ────────────────────────────────────────────────────── */
+const statEl=document.getElementById("statBillions");
+let statShown=0;
+function renderStat(v){
+  statShown=v;
+  const nf=new Intl.NumberFormat(lang==="ar"?"ar-SA":"en-US");
+  statEl.textContent=nf.format(Math.round(v));
+}
+renderStat(0);
+(function initStat(){
+  const target=parseFloat(statEl.dataset.target);
+  let done=false;
+  function run(){
+    if(done)return;done=true;
+    if(hasGSAP&&!reduce){
+      const o={v:0};
+      gsap.to(o,{v:target,duration:2.6,ease:"power3.out",onUpdate:()=>renderStat(o.v)});
+      setTimeout(()=>{if(statShown<target)renderStat(target);},4000);
+    } else renderStat(target);
+  }
+  if(hasGSAP) ScrollTrigger.create({trigger:"#stats",start:"top 75%",once:true,onEnter:run});
+  else if("IntersectionObserver" in window) new IntersectionObserver((es,io)=>es.forEach(e=>{if(e.isIntersecting){run();io.disconnect();}}),{threshold:.3}).observe(document.getElementById("stats"));
+  else run();
+})();
+
+/* ── partnership diagram: flowing dashes ──────────────────────────────── */
+document.querySelectorAll("#modelSvg .flow").forEach(pth=>{
+  pth.setAttribute("stroke-dasharray","5 7");
+  if(hasGSAP&&!reduce) gsap.to(pth,{strokeDashoffset:-120,duration:9,repeat:-1,ease:"none"});
+});
+
+/* ── CTA pinned reveal ────────────────────────────────────────────────── */
+(function initCTA(){
+  const dim=document.getElementById("ctaDim"),content=document.getElementById("ctaContent"),emblem=document.getElementById("ctaEmblem");
+  if(hasGSAP&&!reduce){
+    gsap.to("#ctaEmblem img",{scale:1.06,duration:5.5,yoyo:true,repeat:-1,ease:"sine.inOut"});
+    ScrollTrigger.create({trigger:"#cta",start:"top top",end:"bottom bottom",scrub:true,onUpdate:s=>{
+      const p=s.progress;
+      dim.style.opacity=ss(0.3,0.62,p);
+      content.style.opacity=ss(0.38,0.7,p);
+      content.style.transform="translateY("+(28*(1-ss(0.38,0.7,p)))+"px)";
+      emblem.style.transform="scale("+(1+p*.12)+")";
+      emblem.style.opacity=1-ss(0.55,0.95,p)*.55;
+    }});
+  } else {dim.style.opacity=.96;content.style.opacity=1;content.style.transform="none";}
+})();
+
+/* ── tabs + persona / CTA routing ─────────────────────────────────────── */
+const tabOpp=document.getElementById("tabOpp"),tabPart=document.getElementById("tabPart");
+const formOpp=document.getElementById("formOpp"),formPart=document.getElementById("formPart");
+const successPanel=document.getElementById("formSuccess");
+function showForm(which){
+  successPanel.classList.remove("show");
+  const isOpp=which==="opportunity";
+  tabOpp.setAttribute("aria-selected",isOpp?"true":"false");
+  tabPart.setAttribute("aria-selected",isOpp?"false":"true");
+  formOpp.hidden=!isOpp;formPart.hidden=isOpp;
+  if(hasGSAP)requestAnimationFrame(()=>ScrollTrigger.refresh());
+}
+tabOpp.addEventListener("click",()=>showForm("opportunity"));
+tabPart.addEventListener("click",()=>showForm("partnership"));
+document.querySelectorAll("[data-form]").forEach(el=>{
+  el.addEventListener("click",e=>{
+    e.preventDefault();
+    showForm(el.dataset.form);
+    const role=el.dataset.role;
+    if(role){
+      const sel=el.dataset.form==="opportunity"?document.getElementById("oRole"):document.getElementById("pRole");
+      if(sel&&[...sel.options].some(o=>o.value===role))sel.value=role;
+    }
+    scrollToEl(document.getElementById("contact"));
+  });
+});
+
+/* ── mock submit: clear success / failure states ──────────────────────── */
+function wireForm(form,failNote){
+  const btn=form.querySelector('button[type="submit"]');
+  const btnLabel=()=>btn.textContent;
+  form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    failNote.classList.remove("show");
+    let firstBad=null;
+    form.querySelectorAll(".field").forEach(f=>{
+      const inp=f.querySelector("input,select,textarea");if(!inp)return;
+      let bad=inp.required&&!inp.value.trim();
+      if(!bad&&inp.type==="tel"){const digits=inp.value.replace(/\D/g,"");bad=digits.length<9||digits.length>14;}
+      if(!bad&&inp.type==="email"&&inp.value.trim()){bad=!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inp.value.trim());}
+      f.classList.toggle("err",bad);
+      if(bad&&!firstBad)firstBad=inp;
+    });
+    if(firstBad){firstBad.focus({preventScroll:false});return;}
+    const orig=btnLabel();
+    btn.disabled=true;btn.textContent=lang==="ar"?"جارٍ الإرسال…":"Sending…";
+    await new Promise(r=>setTimeout(r,1400));
+    btn.disabled=false;btn.textContent=orig;
+    const okOutcome=Math.random()<0.85;      /* demo: 85% success, 15% failure */
+    if(okOutcome){
+      form.hidden=true;
+      document.getElementById("okRef").textContent="BRK-2026-"+String(Math.floor(1000+Math.random()*9000));
+      successPanel.classList.add("show");
+      scrollToEl(successPanel);
+      if(hasGSAP)requestAnimationFrame(()=>ScrollTrigger.refresh());
+    } else {
+      failNote.classList.add("show");
+      failNote.scrollIntoView({behavior:"smooth",block:"center"});
+    }
+  });
+  form.querySelectorAll("input,select,textarea").forEach(inp=>{
+    inp.addEventListener("input",()=>inp.closest(".field").classList.remove("err"));
+  });
+}
+wireForm(formOpp,document.getElementById("oppFail"));
+wireForm(formPart,document.getElementById("partFail"));
+document.getElementById("okAgain").addEventListener("click",()=>{
+  successPanel.classList.remove("show");
+  const which=tabOpp.getAttribute("aria-selected")==="true"?formOpp:formPart;
+  which.hidden=false;which.reset();
+  scrollToEl(which);
+  if(hasGSAP)requestAnimationFrame(()=>ScrollTrigger.refresh());
+});
+
+if(hasGSAP){window.addEventListener("load",()=>ScrollTrigger.refresh());if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>ScrollTrigger.refresh());}
+
+})();
+</script>
+</body>
+</html>
